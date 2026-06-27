@@ -1,0 +1,258 @@
+ :root{
+    /* Paleta original conservada (igual que index.html) */
+    --blue-1:#1e90ff;
+    --blue-2:#2563eb;
+    --blue-3:#3b82f6;
+    --turquoise:#14e0c4;
+    --green-accent:#22c55e;
+    --orange-accent:#fbbf24;
+    --orange-deep:#f59e0b;
+    --purple-accent:#7c3aed;
+
+    /* Tema claro */
+    --bg:#f5f8ff;
+    --bg-soft:#ffffff;
+    --text:#1c2433;
+    --text-soft:#54607a;
+    --card-bg:#ffffff;
+    --card-shadow:0 10px 30px rgba(30,60,120,0.12);
+    --border-soft:rgba(30,60,120,0.08);
+    --header-text:#16213a;
+  }
+
+  [data-theme="dark"]{
+    --bg:#0b1020;
+    --bg-soft:#121830;
+    --text:#eaf0ff;
+    --text-soft:#a7b3cf;
+    --card-bg:#171f3a;
+    --card-shadow:0 10px 30px rgba(0,0,0,0.5);
+    --border-soft:rgba(255,255,255,0.08);
+    --header-text:#eaf6ff;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    font-family:'Inter', sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    transition:background .4s ease, color .4s ease;
+    overflow-x:hidden;
+    min-height:100vh;
+  }
+
+  h1,h2,h3,.brand{font-family:'Poppins', sans-serif;}
+
+  /* ===== TOPBAR ANUNCIO (animado, mismos colores del header) ===== */
+  .announce-bar{
+    background:linear-gradient(120deg, var(--blue-1), var(--turquoise), var(--purple-accent), var(--blue-2));
+    background-size:300% 300%;
+    animation:gradientMove 9s ease infinite;
+    color:#1c2433;
+    text-align:center;
+    padding:14px 20px;
+    font-weight:800;
+    font-size:1.1rem;
+    letter-spacing:0.5px;
+    position:sticky;
+    top:0;
+    z-index:1100;
+    box-shadow:0 4px 16px rgba(0,0,0,0.18);
+  }
+
+  .announce-bar .glow-text{
+    color:var(--orange-accent);
+    text-shadow:0 0 14px rgba(251,191,36,0.7);
+  }
+
+  @keyframes gradientMove{
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+  }
+
+  /* ===== UTILITY BAR (volver + toggle tema) ===== */
+  .utility-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 24px;
+    max-width:1400px;
+    margin:0 auto;
+  }
+
+  .back-home{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:var(--card-bg);
+    color:var(--text);
+    border:1px solid var(--border-soft);
+    padding:10px 18px;
+    border-radius:30px;
+    text-decoration:none;
+    font-weight:700;
+    font-size:0.92rem;
+    box-shadow:var(--card-shadow);
+    transition:transform .25s ease, background .25s ease;
+  }
+
+  .back-home:hover{
+    transform:translateY(-2px);
+    background:var(--bg-soft);
+  }
+
+  .theme-toggle{
+    width:46px;height:46px;
+    border-radius:50%;
+    border:2px solid var(--border-soft);
+    background:var(--card-bg);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    transition:transform .3s ease, background .3s ease;
+    flex-shrink:0;
+    box-shadow:var(--card-shadow);
+  }
+
+  .theme-toggle:hover{
+    transform:scale(1.08) rotate(15deg);
+  }
+
+  .theme-toggle svg{width:22px;height:22px;}
+
+  /* ===== HERO MATRÍCULA ===== */
+  .matricula-hero{
+    text-align:center;
+    padding:40px 24px 70px;
+    max-width:900px;
+    margin:0 auto;
+  }
+
+  .brand-mini{
+    font-size:clamp(1.8rem, 5vw, 2.6rem);
+    font-weight:800;
+    color:var(--text);
+    margin-bottom:18px;
+    animation:floatIn .8s ease both;
+  }
+
+  .hero-slogan{
+    font-size:clamp(2.2rem, 7vw, 3.6rem);
+    font-weight:800;
+    line-height:1.25;
+    color:var(--orange-deep);
+    text-shadow:0 0 22px rgba(245,158,11,0.45);
+    margin-bottom:28px;
+    animation:floatIn 1s ease both;
+  }
+
+  [data-theme="dark"] .hero-slogan{
+    color:var(--orange-accent);
+    text-shadow:0 0 26px rgba(251,191,36,0.55);
+  }
+
+  .hero-desc{
+    font-size:clamp(1rem, 2.2vw, 1.2rem);
+    color:var(--text-soft);
+    line-height:1.7;
+    margin-bottom:46px;
+    animation:floatIn 1.2s ease both;
+  }
+
+  @keyframes floatIn{
+    from{opacity:0; transform:translateY(24px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  /* ===== ROLE CARDS ===== */
+  .role-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:26px;
+    max-width:760px;
+    margin:0 auto;
+    padding:0 24px 80px;
+    animation:floatIn 1.4s ease both;
+  }
+
+  .role-card{
+    background:var(--card-bg);
+    border:1px solid var(--border-soft);
+    border-radius:20px;
+    padding:42px 24px;
+    text-align:center;
+    text-decoration:none;
+    color:var(--text);
+    box-shadow:var(--card-shadow);
+    transition:transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .role-card::before{
+    content:"";
+    position:absolute;
+    top:0;left:0;right:0;
+    height:5px;
+    background:linear-gradient(90deg, var(--blue-1), var(--turquoise));
+  }
+
+  .role-card.estudiante::before{
+    background:linear-gradient(90deg, var(--orange-deep), var(--orange-accent));
+  }
+
+  .role-card:hover{
+    transform:translateY(-8px);
+    box-shadow:0 18px 40px rgba(30,60,120,0.25);
+    border-color:var(--turquoise);
+  }
+
+  .role-card.estudiante:hover{
+    border-color:var(--orange-accent);
+  }
+
+  .role-icon{
+    font-size:3.2rem;
+    margin-bottom:18px;
+    display:inline-block;
+  }
+
+  .role-card h3{
+    font-size:1.4rem;
+    font-weight:800;
+    margin-bottom:10px;
+    color:var(--purple-accent);
+  }
+
+  [data-theme="dark"] .role-card h3{color:#c4a4ff;}
+
+  .role-card.estudiante h3{color:var(--orange-deep);}
+  [data-theme="dark"] .role-card.estudiante h3{color:var(--orange-accent);}
+
+  .role-card p{
+    font-size:0.95rem;
+    color:var(--text-soft);
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    .announce-bar{animation:none;}
+    .brand-mini, .hero-slogan, .hero-desc, .role-grid{animation:none;}
+  }
+
+  /* ===== RESPONSIVE / MOBILE ===== */
+  @media (max-width:640px){
+    .announce-bar{font-size:0.85rem; padding:12px 14px;}
+    .utility-bar{padding:14px 16px;}
+    .back-home span.label{display:inline;}
+    .role-grid{grid-template-columns:1fr; max-width:380px;}
+    .matricula-hero{padding:20px 18px 50px;}
+  }
+
+  @media (max-width:380px){
+    .back-home{padding:9px 14px; font-size:0.82rem;}
+    .theme-toggle{width:42px;height:42px;}
+  }
