@@ -361,6 +361,7 @@ function clearMsg(elId){
   el.textContent = '';
 }
 function isValidGmail(email){ return /^[^\s@]+@gmail\.com$/i.test(email.trim()); }
+const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB, mismo límite que usa el estudiante
 function escapeHtml(str){
   const div = document.createElement('div');
   div.textContent = str;
@@ -693,9 +694,27 @@ document.getElementById('toggleArchivedTasks').addEventListener('click', () => {
 });
 
 document.getElementById('taskFiles').addEventListener('change', (e) => {
-  pendingTaskFiles = Array.from(e.target.files).map(f => f.name);
+  const files = Array.from(e.target.files);
   const box = document.getElementById('taskFilesChosen');
-  box.textContent = pendingTaskFiles.length > 0 ? pendingTaskFiles.join(', ') : 'Ningún archivo adjuntado.';
+  box.textContent = files.length > 0 ? files.map(f => f.name).join(', ') : 'Ningún archivo adjuntado.';
+
+  pendingTaskFiles = [];
+  let pending = files.length;
+  if(pending === 0) return;
+
+  files.forEach(file => {
+    if(file.size > MAX_FILE_SIZE){
+      showToast(`⚠️ "${file.name}" es muy grande (máx. 4MB) y no se adjuntará.`);
+      pending--;
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      pendingTaskFiles.push({ name: file.name, type: file.type || '', data: reader.result });
+    };
+    reader.onerror = () => showToast(`No se pudo leer "${file.name}".`);
+    reader.readAsDataURL(file);
+  });
 });
 
 document.getElementById('formTask').addEventListener('submit', (e) => {
@@ -725,7 +744,7 @@ document.getElementById('formTask').addEventListener('submit', (e) => {
     title, desc, due,
     createdAt: Date.now(),
     archived:false,
-    materials: pendingTaskFiles.map(name => ({ name })),
+    materials: pendingTaskFiles.map(f => ({ name: f.name, type: f.type, data: f.data })),
     submissions: []
   });
   DB.saveCourses(courses);
@@ -914,7 +933,6 @@ document.getElementById('formReview').addEventListener('submit', (e) => {
 /* =========================================================
    ARCHIVOS DE LA ENTREGA: DESCARGAR / VISTA PREVIA / REEMPLAZAR
 ========================================================= */
-const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB, mismo límite que usa el estudiante
 
 function findSubmission(taskId, studentEmail){
   const courses = DB.getCourses();
