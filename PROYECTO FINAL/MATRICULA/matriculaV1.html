@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matrícula - Academia Ronald Byte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="stylematriculaV1.css">
+</head>
+<body>
+
+<div class="announce-bar">
+  🚀 <span class="glow-text">¡EMPIEZA TU MATRÍCULA YA!</span> 🚀
+</div>
+
+<div class="utility-bar">
+  <a href="/indexV1.html" class="back-home">🏠 <span class="label">Volver al Inicio</span></a>
+  <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema claro/oscuro">
+    <svg id="sunIcon" viewBox="0 0 24 24" fill="none" stroke="var(--orange-deep)" stroke-width="2" stroke-linecap="round">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="4"></line>
+      <line x1="12" y1="20" x2="12" y2="23"></line>
+      <line x1="4.2" y1="4.2" x2="6.3" y2="6.3"></line>
+      <line x1="17.7" y1="17.7" x2="19.8" y2="19.8"></line>
+      <line x1="1" y1="12" x2="4" y2="12"></line>
+      <line x1="20" y1="12" x2="23" y2="12"></line>
+      <line x1="4.2" y1="19.8" x2="6.3" y2="17.7"></line>
+      <line x1="17.7" y1="6.3" x2="19.8" y2="4.2"></line>
+    </svg>
+    <svg id="moonIcon" viewBox="0 0 24 24" fill="#dbe6ff" style="display:none;">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+    </svg>
+  </button>
+</div>
+
+<section class="matricula-hero">
+  <div class="brand-mini">RonaldBYTE</div>
+  <h1 class="hero-slogan">Aprende.<br>Crea.<br>Crece.</h1>
+  <p class="hero-desc">Una plataforma educativa moderna donde docentes y estudiantes se conectan para compartir conocimiento y desarrollar nuevas habilidades.</p>
+</section>
+
+<div class="role-grid">
+  <a href="/REGISTRO ACADEMIA/PROFESOR/profesorV1.html" class="role-card docente">
+    <span class="role-icon">🎓</span>
+    <h3>Docente</h3>
+    <p>Ingresar al panel de profesores</p>
+  </a>
+  <a href="/REGISTRO ACADEMIA/ESTUDIANTE/estudianteV1.html" class="role-card estudiante">
+    <span class="role-icon">🧑‍🎓</span>
+    <h3>Estudiante</h3>
+    <p>Acceder a cursos y actividades</p>
+  </a>
+</div>
+
+<script>
+  // Theme toggle (mismo comportamiento que index.html)
+  const themeToggle = document.getElementById('themeToggle');
+  const sunIcon = document.getElementById('sunIcon');
+  const moonIcon = document.getElementById('moonIcon');
+  const root = document.documentElement;
+
+  function setTheme(theme){
+    if(theme === 'dark'){
+      root.setAttribute('data-theme','dark');
+      sunIcon.style.display='none';
+      moonIcon.style.display='block';
+    } else {
+      root.removeAttribute('data-theme');
+      sunIcon.style.display='block';
+      moonIcon.style.display='none';
+    }
+  }
+
+  // Esta página inicia en oscuro para que combine con el estilo de la captura original,
+  // pero el botón permite alternar libremente a claro.
+  setTheme('dark');
+
+  themeToggle.addEventListener('click', () => {
+    const isDark = root.getAttribute('data-theme') === 'dark';
+    setTheme(isDark ? 'light' : 'dark');
+  });
+</script>
+
+</body>
+</html>

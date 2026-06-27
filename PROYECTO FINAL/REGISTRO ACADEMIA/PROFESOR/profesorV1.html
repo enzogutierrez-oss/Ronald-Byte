@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intranet Docente - Academia Ronald Byte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styleprofesorV1.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="profesorV1.html" class="brand-area">
+      <span class="badge">🧑‍🏫</span>
+      <span class="label">Academia Ronald Byte — Docente</span>
+    </a>
+    <div class="topbar-right">
+      <a href="/MATRICULA/matriculaV1.html" class="back-link" id="navBackHome">⬅ Inicio</a>
+      <button class="logout-btn" id="navLogout" style="display:none;">Cerrar sesión</button>
+      <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema claro/oscuro">
+        <svg id="sunIcon" viewBox="0 0 24 24" fill="none" stroke="#fff7d6" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="4"></line>
+          <line x1="12" y1="20" x2="12" y2="23"></line>
+          <line x1="4.2" y1="4.2" x2="6.3" y2="6.3"></line>
+          <line x1="17.7" y1="17.7" x2="19.8" y2="19.8"></line>
+          <line x1="1" y1="12" x2="4" y2="12"></line>
+          <line x1="20" y1="12" x2="23" y2="12"></line>
+          <line x1="4.2" y1="19.8" x2="6.3" y2="17.7"></line>
+          <line x1="17.7" y1="6.3" x2="19.8" y2="4.2"></line>
+        </svg>
+        <svg id="moonIcon" viewBox="0 0 24 24" fill="#dbe6ff" style="display:none;">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== VISTA: REGISTRO DOCENTE ===================== -->
+<section class="view active" id="view-register">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h2>Crear cuenta de docente</h2>
+      <p class="sub">Regístrate para gestionar tus cursos y revisar las entregas de tus estudiantes.</p>
+
+      <form id="formRegister" novalidate>
+        <div class="field">
+          <label for="regName">Nombre completo</label>
+          <input type="text" id="regName" placeholder="Ej. Prof. Carlos Ruiz" autocomplete="name" required>
+        </div>
+        <div class="field">
+          <label for="regEmail">Correo (Gmail)</label>
+          <input type="email" id="regEmail" placeholder="tunombre@gmail.com" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="regPass">Contraseña</label>
+          <div class="pass-wrap">
+            <input type="password" id="regPass" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required minlength="6">
+            <button type="button" class="pass-toggle" data-target="regPass">👁️</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="regPass2">Confirmar contraseña</label>
+          <div class="pass-wrap">
+            <input type="password" id="regPass2" placeholder="Repite tu contraseña" autocomplete="new-password" required minlength="6">
+            <button type="button" class="pass-toggle" data-target="regPass2">👁️</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary">Registrarme</button>
+        <div class="form-msg" id="registerMsg"></div>
+
+        <div class="email-preview" id="emailPreview" style="display:none; margin-top:16px; border:1px dashed var(--border-soft); border-radius:12px; padding:16px; background:var(--input-bg); font-size:0.85rem;">
+          <div style="font-weight:800; color:var(--purple-accent); margin-bottom:8px; font-size:0.82rem;">📧 Correo enviado a tu Gmail</div>
+          <p style="color:var(--text-soft); margin-bottom:4px;"><strong>Para:</strong> <span id="emailTo"></span></p>
+          <p style="color:var(--text-soft); margin-bottom:4px;">Hola <span id="emailName"></span>, confirma tu cuenta de docente para activarla:</p>
+          <button type="button" id="btnConfirmEmail" style="margin-top:10px; background:var(--turquoise); color:#06352d; padding:9px 18px; border-radius:20px; font-weight:800; font-size:0.82rem; border:none; cursor:pointer;">Confirmar mi cuenta</button>
+        </div>
+      </form>
+
+      <div class="switch-line">
+        ¿Ya tienes cuenta? <button id="goLogin">Inicia sesión</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== VISTA: LOGIN DOCENTE ===================== -->
+<section class="view" id="view-login">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h2>Iniciar sesión — Docente</h2>
+      <p class="sub">Ingresa con tu correo y contraseña.</p>
+
+      <form id="formLogin" novalidate>
+        <div class="field">
+          <label for="logEmail">Correo</label>
+          <input type="email" id="logEmail" placeholder="tunombre@gmail.com" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="logPass">Contraseña</label>
+          <div class="pass-wrap">
+            <input type="password" id="logPass" placeholder="Tu contraseña" autocomplete="current-password" required>
+            <button type="button" class="pass-toggle" data-target="logPass">👁️</button>
+          </div>
+        </div>
+        <button type="submit" class="btn-primary">Entrar</button>
+        <div class="form-msg" id="loginMsg"></div>
+      </form>
+
+      <div class="switch-line">
+        ¿No tienes cuenta? <button id="goRegister">Regístrate</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== VISTA: DASHBOARD DOCENTE ===================== -->
+<section class="view" id="view-dashboard">
+  <div class="dash-wrap">
+    <div class="welcome-banner">
+      <h1>Bienvenido, <span id="teacherNameDisplay"></span> 👋</h1>
+      <p>Gestiona tus cursos, crea actividades y revisa las entregas de tus estudiantes.</p>
+    </div>
+
+    <div class="dash-tabs">
+      <button class="dash-tab active" data-panel="panel-courses">📚 Mis Cursos</button>
+      <button class="dash-tab" data-panel="panel-submissions">📥 Tareas Enviadas <span class="tab-badge" id="submissionsBadge" style="display:none;">0</span></button>
+      <button class="dash-tab" data-panel="panel-account">⚙️ Mi Cuenta</button>
+    </div>
+
+    <!-- Panel: lista de cursos -->
+    <div class="panel active" id="panel-courses">
+      <div class="section-heading">
+        <span>Mis cursos</span>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="toggle-archived-btn" id="toggleArchivedCourses">👁️ Mostrar cursos ocultos</button>
+          <button class="btn-primary compact" id="btnOpenNewCourse">➕ Nuevo curso</button>
+        </div>
+      </div>
+      <div class="courses-grid" id="coursesGrid"></div>
+    </div>
+
+    <!-- Crear curso (form simple, dentro del mismo panel) -->
+    <div class="panel" id="panel-new-course">
+      <button class="back-courses" id="backFromNewCourse">⬅ Volver a mis cursos</button>
+      <div class="create-task-card" style="max-width:560px;">
+        <h3>Crear nuevo curso</h3>
+        <form id="formCourse" novalidate>
+          <div class="field">
+            <label for="courseName">Nombre del curso</label>
+            <input type="text" id="courseName" placeholder="Ej. Bases de Datos" required>
+          </div>
+          <div class="field">
+            <label for="courseDesc">Descripción breve</label>
+            <input type="text" id="courseDesc" placeholder="Ej. Modelado y consultas SQL" required>
+          </div>
+          <div class="field">
+            <label for="courseIcon">Ícono (emoji)</label>
+            <input type="text" id="courseIcon" placeholder="🗄️" maxlength="4">
+          </div>
+          <button type="submit" class="btn-primary">Crear curso</button>
+          <div class="form-msg" id="courseMsg"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Panel: detalle de un curso (docente) -->
+    <div class="panel" id="panel-course-detail">
+      <button class="back-courses" id="backToCourses">⬅ Volver a mis cursos</button>
+      <div class="course-detail-head">
+        <h2 id="detailCourseName"></h2>
+        <p id="detailCourseDesc"></p>
+      </div>
+
+      <div class="detail-actions">
+        <button class="btn-primary compact" id="btnOpenNewTask">➕ Crear actividad</button>
+        <button class="toggle-archived-btn" id="toggleArchivedTasks">👁️ Mostrar actividades antiguas</button>
+      </div>
+
+      <!-- Crear actividad -->
+      <div class="create-task-card" id="newTaskCard" style="display:none;">
+        <h3>Nueva actividad</h3>
+        <form id="formTask" novalidate>
+          <div class="field">
+            <label for="taskTitle">Título de la actividad</label>
+            <input type="text" id="taskTitle" placeholder="Ej. Tarea: diagrama ER" required>
+          </div>
+          <div class="field">
+            <label for="taskDesc">Descripción / instrucciones</label>
+            <textarea id="taskDesc" placeholder="Explica qué debe entregar el estudiante" required></textarea>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="taskDate">Fecha límite</label>
+              <input type="date" id="taskDate" required>
+            </div>
+            <div class="field">
+              <label for="taskTime">Hora límite</label>
+              <input type="time" id="taskTime" required>
+            </div>
+          </div>
+          <div class="field">
+            <label>Material de apoyo (archivos, videos, etc.)</label>
+            <label class="file-label" for="taskFiles">📎 Adjuntar archivos / videos</label>
+            <input type="file" id="taskFiles" multiple style="display:none;">
+            <div class="file-chosen-list" id="taskFilesChosen">Ningún archivo adjuntado.</div>
+          </div>
+          <button type="submit" class="btn-primary">Publicar actividad</button>
+          <div class="form-msg" id="taskMsg"></div>
+        </form>
+      </div>
+
+      <div class="task-list" id="taskList"></div>
+    </div>
+
+    <!-- Panel: tareas enviadas (global, todos los cursos) -->
+    <div class="panel" id="panel-submissions">
+      <h2 class="section-heading">Tareas enviadas por los estudiantes</h2>
+      <div class="submissions-grid" id="submissionsGrid"></div>
+    </div>
+
+    <!-- Panel: cuenta -->
+    <div class="panel" id="panel-account">
+      <h2 class="section-heading">Mi Cuenta</h2>
+      <div class="account-grid">
+        <div class="account-card">
+          <h3>Cambiar contraseña</h3>
+          <form id="formChangePass" novalidate>
+            <div class="field">
+              <label for="curPass">Contraseña actual</label>
+              <div class="pass-wrap">
+                <input type="password" id="curPass" required>
+                <button type="button" class="pass-toggle" data-target="curPass">👁️</button>
+              </div>
+            </div>
+            <div class="field">
+              <label for="newPass">Nueva contraseña</label>
+              <div class="pass-wrap">
+                <input type="password" id="newPass" required minlength="6">
+                <button type="button" class="pass-toggle" data-target="newPass">👁️</button>
+              </div>
+            </div>
+            <button type="submit" class="btn-primary">Actualizar contraseña</button>
+            <div class="form-msg" id="changePassMsg"></div>
+          </form>
+        </div>
+
+        <div class="account-card danger-zone">
+          <h3>Eliminar cuenta</h3>
+          <p>Esta acción es permanente y borrará tu cuenta de docente y tu acceso a la intranet. Tus cursos creados permanecerán visibles para los estudiantes.</p>
+          <button class="btn-danger block" id="btnDeleteAccount">Eliminar mi cuenta</button>
+          <div class="form-msg" id="deleteMsg"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="app-footer">
+  © 2026 Academia Ronald Byte. Intranet del docente.
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<!-- Modal: revisar / editar revisión de una entrega -->
+<div class="modal-overlay" id="reviewModal">
+  <div class="modal-box">
+    <h3 id="reviewModalTitle">Revisar entrega</h3>
+    <p class="sub" id="reviewModalSub">Estudiante</p>
+    <form id="formReview" novalidate>
+      <div class="field">
+        <label for="reviewGrade">Nota (opcional)</label>
+        <input type="text" id="reviewGrade" placeholder="Ej. 18/20">
+      </div>
+      <div class="field">
+        <label for="reviewComment">Comentario para el estudiante</label>
+        <textarea id="reviewComment" placeholder="Ej. Buen trabajo, te faltó incluir las conclusiones." required></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-outline" id="reviewCancelBtn">Cancelar</button>
+        <button type="submit" class="btn-primary" id="reviewSubmitBtn">Enviar revisión</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: vista previa de archivo entregado -->
+<div class="modal-overlay" id="previewModal">
+  <div class="modal-box" id="previewModalBox" style="max-width:700px;">
+    <h3 id="previewModalTitle">Vista previa</h3>
+    <p class="sub" id="previewModalSub">Estudiante</p>
+    <div id="previewModalBody" style="max-height:65vh; overflow:auto; border-radius:12px; background:var(--input-bg); display:flex; align-items:center; justify-content:center; padding:16px; min-height:160px;"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-outline" id="previewCloseBtn">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   "BASE DE DATOS" LOCAL — Compartida con la intranet del
+   estudiante (intranet.html). Mismas claves de localStorage.
+========================================================= */
+
+const DB = {
+  KEY_TEACHERS: 'arb_teachers',
+  KEY_COURSES: 'arb_courses',
+  KEY_TEACHER_SESSION: 'arb_teacher_session',
+
+  getTeachers(){ return JSON.parse(localStorage.getItem(this.KEY_TEACHERS) || '[]'); },
+  saveTeachers(t){ localStorage.setItem(this.KEY_TEACHERS, JSON.stringify(t)); },
+
+  getCourses(){
+    let c = JSON.parse(localStorage.getItem(this.KEY_COURSES) || 'null');
+    if(!c){
+      c = seedCourses();
+      this.saveCourses(c);
+    }
+    return c;
+  },
+  saveCourses(c){ localStorage.setItem(this.KEY_COURSES, JSON.stringify(c)); },
+
+  getSession(){ return JSON.parse(localStorage.getItem(this.KEY_TEACHER_SESSION) || 'null'); },
+  setSession(email){ localStorage.setItem(this.KEY_TEACHER_SESSION, JSON.stringify({email})); },
+  clearSession(){ localStorage.removeItem(this.KEY_TEACHER_SESSION); }
+};
+
+function seedCourses(){
+  const now = Date.now();
+  return [
+    {
+      id: 'c1', name: 'Fundamentos de Computación',
+      desc: 'Bases esenciales sobre hardware, software y el entorno digital.',
+      icon: '💻', archived:false, materials:[],
+      tasks: [
+        { id:'t1', title:'Cuestionario: partes de la computadora', desc:'Responde el cuestionario sobre hardware básico.', due: now + 1000*60*60*26, createdAt: now, archived:false, materials:[], submissions:[] },
+        { id:'t2', title:'Ensayo corto: historia de la computación', desc:'Entrega un documento de máximo 2 páginas.', due: now + 1000*60*60*4, createdAt: now, archived:false, materials:[], submissions:[] }
+      ]
+    },
+    {
+      id: 'c2', name: 'Algoritmos y Programación',
+      desc: 'Pensamiento lógico y primeros pasos en desarrollo de software.',
+      icon: '🧠', archived:false, materials:[],
+      tasks: [
+        { id:'t3', title:'Diagrama de flujo: suma de dos números', desc:'Sube tu diagrama en imagen o PDF.', due: now + 1000*60*60*48, createdAt: now, archived:false, materials:[], submissions:[] }
+      ]
+    },
+    {
+      id: 'c3', name: 'Redes de Computadoras',
+      desc: 'Cómo se conectan e intercambian información los equipos.',
+      icon: '🌐', archived:false, materials:[],
+      tasks: [
+        { id:'t4', title:'Mapa de red de tu casa', desc:'Dibuja y sube el mapa de tu red doméstica.', due: now - 1000*60*60*2, createdAt: now, archived:false, materials:[], submissions:[] }
+      ]
+    }
+  ];
+}
+
+/* =========================================================
+   UTILIDADES
+========================================================= */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=> t.classList.remove('show'), 4000);
+}
+function showView(id){
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function showMsg(elId, text, type){
+  const el = document.getElementById(elId);
+  el.textContent = text;
+  el.className = 'form-msg show ' + type;
+}
+function clearMsg(elId){
+  const el = document.getElementById(elId);
+  el.className = 'form-msg';
+  el.textContent = '';
+}
+function isValidGmail(email){ return /^[^\s@]+@gmail\.com$/i.test(email.trim()); }
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* =========================================================
+   TEMA CLARO / OSCURO
+========================================================= */
+const themeToggle = document.getElementById('themeToggle');
+const sunIcon = document.getElementById('sunIcon');
+const moonIcon = document.getElementById('moonIcon');
+const root = document.documentElement;
+
+function setTheme(theme){
+  if(theme === 'dark'){
+    root.setAttribute('data-theme','dark');
+    sunIcon.style.display='none';
+    moonIcon.style.display='block';
+  } else {
+    root.removeAttribute('data-theme');
+    sunIcon.style.display='block';
+    moonIcon.style.display='none';
+  }
+}
+setTheme('light');
+themeToggle.addEventListener('click', () => {
+  const isDark = root.getAttribute('data-theme') === 'dark';
+  setTheme(isDark ? 'light' : 'dark');
+});
+
+/* =========================================================
+   MOSTRAR / OCULTAR CONTRASEÑA
+========================================================= */
+document.querySelectorAll('.pass-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const input = document.getElementById(btn.dataset.target);
+    if(input.type === 'password'){ input.type = 'text'; btn.textContent = '🙈'; }
+    else { input.type = 'password'; btn.textContent = '👁️'; }
+  });
+});
+
+/* =========================================================
+   NAVEGACIÓN AUTENTICACIÓN
+========================================================= */
+document.getElementById('goLogin').addEventListener('click', () => {
+  clearMsg('loginMsg');
+  showView('view-login');
+});
+document.getElementById('goRegister').addEventListener('click', () => {
+  clearMsg('registerMsg');
+  document.getElementById('emailPreview').style.display = 'none';
+  showView('view-register');
+});
+
+/* =========================================================
+   REGISTRO DOCENTE + CONFIRMACIÓN SIMULADA
+========================================================= */
+let pendingConfirmation = null;
+
+document.getElementById('formRegister').addEventListener('submit', (e) => {
+  e.preventDefault();
+  clearMsg('registerMsg');
+
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('regPass').value;
+  const pass2 = document.getElementById('regPass2').value;
+
+  if(!name || !email || !pass || !pass2){
+    showMsg('registerMsg', 'Completa todos los campos.', 'error');
+    return;
+  }
+  if(!isValidGmail(email)){
+    showMsg('registerMsg', 'Usa un correo de Gmail válido (ejemplo@gmail.com).', 'error');
+    return;
+  }
+  if(pass.length < 6){
+    showMsg('registerMsg', 'La contraseña debe tener al menos 6 caracteres.', 'error');
+    return;
+  }
+  if(pass !== pass2){
+    showMsg('registerMsg', 'Las contraseñas no coinciden.', 'error');
+    return;
+  }
+
+  const teachers = DB.getTeachers();
+  if(teachers.find(t => t.email === email)){
+    showMsg('registerMsg', 'Ya existe una cuenta de docente con ese correo.', 'error');
+    return;
+  }
+
+  teachers.push({ name, email, password: pass, confirmed:false, createdAt: Date.now() });
+  DB.saveTeachers(teachers);
+  pendingConfirmation = email;
+
+  document.getElementById('emailTo').textContent = email;
+  document.getElementById('emailName').textContent = name;
+  document.getElementById('emailPreview').style.display = 'block';
+
+  showMsg('registerMsg', 'Cuenta creada. Confirma el correo simulado abajo.', 'success');
+});
+
+document.getElementById('btnConfirmEmail').addEventListener('click', () => {
+  if(!pendingConfirmation) return;
+  const teachers = DB.getTeachers();
+  const t = teachers.find(x => x.email === pendingConfirmation);
+  if(t){ t.confirmed = true; DB.saveTeachers(teachers); }
+  document.getElementById('emailPreview').style.display = 'none';
+  showMsg('registerMsg', '¡Cuenta confirmada! Ya puedes iniciar sesión.', 'success');
+  pendingConfirmation = null;
+  setTimeout(() => showView('view-login'), 1400);
+});
+
+/* =========================================================
+   LOGIN DOCENTE
+========================================================= */
+document.getElementById('formLogin').addEventListener('submit', (e) => {
+  e.preventDefault();
+  clearMsg('loginMsg');
+
+  const email = document.getElementById('logEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('logPass').value;
+
+  const teachers = DB.getTeachers();
+  const teacher = teachers.find(t => t.email === email);
+
+  if(!teacher){
+    showMsg('loginMsg', 'No existe una cuenta de docente con ese correo.', 'error');
+    return;
+  }
+  if(!teacher.confirmed){
+    showMsg('loginMsg', 'Debes confirmar tu cuenta desde el correo antes de iniciar sesión.', 'error');
+    return;
+  }
+  if(teacher.password !== pass){
+    showMsg('loginMsg', 'Contraseña incorrecta.', 'error');
+    return;
+  }
+
+  DB.setSession(email);
+  enterDashboard(teacher);
+});
+
+/* =========================================================
+   ENTRAR AL DASHBOARD
+========================================================= */
+function enterDashboard(teacher){
+  document.getElementById('teacherNameDisplay').textContent = teacher.name;
+  document.getElementById('navLogout').style.display = 'inline-block';
+  showView('view-dashboard');
+  document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.dash-tab[data-panel="panel-courses"]').classList.add('active');
+  switchPanel('panel-courses');
+  renderCourses();
+  renderSubmissionsPanel();
+}
+
+function currentTeacher(){
+  const session = DB.getSession();
+  if(!session) return null;
+  const teachers = DB.getTeachers();
+  return teachers.find(t => t.email === session.email) || null;
+}
+
+/* =========================================================
+   TABS
+========================================================= */
+document.querySelectorAll('.dash-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    switchPanel(tab.dataset.panel);
+    if(tab.dataset.panel === 'panel-courses') renderCourses();
+    if(tab.dataset.panel === 'panel-submissions') renderSubmissionsPanel();
+  });
+});
+function switchPanel(panelId){
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+}
+
+/* =========================================================
+   MIS CURSOS (docente ve todos, incluso archivados si activa el toggle)
+========================================================= */
+let showArchivedCourses = false;
+
+document.getElementById('toggleArchivedCourses').addEventListener('click', () => {
+  showArchivedCourses = !showArchivedCourses;
+  document.getElementById('toggleArchivedCourses').textContent = showArchivedCourses ? '🙈 Ocultar cursos ocultos' : '👁️ Mostrar cursos ocultos';
+  renderCourses();
+});
+
+function renderCourses(){
+  const grid = document.getElementById('coursesGrid');
+  let courses = DB.getCourses();
+  if(!showArchivedCourses) courses = courses.filter(c => !c.archived);
+
+  if(courses.length === 0){
+    grid.innerHTML = `<div class="empty-state"><span class="e-icon">📭</span>No hay cursos para mostrar.</div>`;
+    return;
+  }
+
+  grid.innerHTML = courses.map(c => {
+    const activeTasks = c.tasks.filter(t => !t.archived).length;
+    const totalSubs = c.tasks.reduce((acc,t) => acc + (t.submissions ? t.submissions.length : 0), 0);
+    return `
+      <div class="course-card ${c.archived ? 'archived' : ''}">
+        ${c.archived ? '<span class="archived-tag">Oculto</span>' : ''}
+        <span class="c-icon">${c.icon}</span>
+        <h3 data-open="${c.id}">${escapeHtml(c.name)}</h3>
+        <p>${escapeHtml(c.desc)}</p>
+        <div class="c-meta">
+          <span>${activeTasks} actividad(es)</span>
+          <span>${totalSubs} entrega(s)</span>
+        </div>
+        <div class="c-actions">
+          <button class="btn-outline" data-open-btn="${c.id}">Ver curso</button>
+          <button class="btn-outline" data-toggle-course="${c.id}">${c.archived ? 'Mostrar' : 'Ocultar'}</button>
+          <button class="btn-danger" data-delete-course="${c.id}">Eliminar</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  grid.querySelectorAll('[data-open], [data-open-btn]').forEach(el => {
+    el.addEventListener('click', () => openCourse(el.dataset.open || el.dataset.openBtn));
+  });
+  grid.querySelectorAll('[data-toggle-course]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const courses = DB.getCourses();
+      const c = courses.find(cc => cc.id === btn.dataset.toggleCourse);
+      c.archived = !c.archived;
+      DB.saveCourses(courses);
+      showToast(c.archived ? 'Curso ocultado. Los estudiantes ya no lo verán.' : 'Curso visible nuevamente para los estudiantes.');
+      renderCourses();
+    });
+  });
+  grid.querySelectorAll('[data-delete-course]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ok = confirm('¿Eliminar este curso por completo? Esta acción no se puede deshacer.');
+      if(!ok) return;
+      let courses = DB.getCourses();
+      courses = courses.filter(cc => cc.id !== btn.dataset.deleteCourse);
+      DB.saveCourses(courses);
+      showToast('Curso eliminado.');
+      renderCourses();
+    });
+  });
+}
+
+/* =========================================================
+   CREAR CURSO
+========================================================= */
+document.getElementById('btnOpenNewCourse').addEventListener('click', () => {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-new-course').classList.add('active');
+});
+document.getElementById('backFromNewCourse').addEventListener('click', () => {
+  switchPanel('panel-courses');
+  renderCourses();
+});
+
+document.getElementById('formCourse').addEventListener('submit', (e) => {
+  e.preventDefault();
+  clearMsg('courseMsg');
+
+  const name = document.getElementById('courseName').value.trim();
+  const desc = document.getElementById('courseDesc').value.trim();
+  let icon = document.getElementById('courseIcon').value.trim();
+  if(!icon) icon = '📘';
+
+  if(!name || !desc){
+    showMsg('courseMsg', 'Completa el nombre y la descripción del curso.', 'error');
+    return;
+  }
+
+  const courses = DB.getCourses();
+  courses.push({ id: 'c' + Date.now(), name, desc, icon, archived:false, materials:[], tasks: [] });
+  DB.saveCourses(courses);
+
+  showMsg('courseMsg', `Curso "${name}" creado. Ya es visible para los estudiantes.`, 'success');
+  document.getElementById('formCourse').reset();
+  setTimeout(() => { switchPanel('panel-courses'); renderCourses(); }, 1100);
+});
+
+/* =========================================================
+   DETALLE DE CURSO (docente): crear actividad, ver/ocultar/eliminar
+========================================================= */
+let activeCourseId = null;
+let showArchivedTasks = false;
+let pendingTaskFiles = [];
+
+function openCourse(courseId){
+  activeCourseId = courseId;
+  showArchivedTasks = false;
+  document.getElementById('toggleArchivedTasks').textContent = '👁️ Mostrar actividades antiguas';
+  document.getElementById('newTaskCard').style.display = 'none';
+
+  const course = DB.getCourses().find(c => c.id === courseId);
+  if(!course) return;
+
+  document.getElementById('detailCourseName').textContent = `${course.icon} ${course.name}`;
+  document.getElementById('detailCourseDesc').textContent = course.desc;
+
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-course-detail').classList.add('active');
+  document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+
+  renderTeacherTasks(course);
+}
+
+document.getElementById('backToCourses').addEventListener('click', () => {
+  activeCourseId = null;
+  document.querySelector('.dash-tab[data-panel="panel-courses"]').classList.add('active');
+  switchPanel('panel-courses');
+  renderCourses();
+});
+
+document.getElementById('btnOpenNewTask').addEventListener('click', () => {
+  const card = document.getElementById('newTaskCard');
+  card.style.display = card.style.display === 'none' ? 'block' : 'none';
+});
+
+document.getElementById('toggleArchivedTasks').addEventListener('click', () => {
+  showArchivedTasks = !showArchivedTasks;
+  document.getElementById('toggleArchivedTasks').textContent = showArchivedTasks ? '🙈 Ocultar actividades antiguas' : '👁️ Mostrar actividades antiguas';
+  const course = DB.getCourses().find(c => c.id === activeCourseId);
+  if(course) renderTeacherTasks(course);
+});
+
+document.getElementById('taskFiles').addEventListener('change', (e) => {
+  pendingTaskFiles = Array.from(e.target.files).map(f => f.name);
+  const box = document.getElementById('taskFilesChosen');
+  box.textContent = pendingTaskFiles.length > 0 ? pendingTaskFiles.join(', ') : 'Ningún archivo adjuntado.';
+});
+
+document.getElementById('formTask').addEventListener('submit', (e) => {
+  e.preventDefault();
+  clearMsg('taskMsg');
+
+  const title = document.getElementById('taskTitle').value.trim();
+  const desc = document.getElementById('taskDesc').value.trim();
+  const date = document.getElementById('taskDate').value;
+  const time = document.getElementById('taskTime').value;
+
+  if(!title || !desc || !date || !time){
+    showMsg('taskMsg', 'Completa todos los campos obligatorios.', 'error');
+    return;
+  }
+
+  const due = new Date(`${date}T${time}`).getTime();
+  if(isNaN(due)){
+    showMsg('taskMsg', 'La fecha u hora no son válidas.', 'error');
+    return;
+  }
+
+  const courses = DB.getCourses();
+  const course = courses.find(c => c.id === activeCourseId);
+  course.tasks.push({
+    id: 't' + Date.now(),
+    title, desc, due,
+    createdAt: Date.now(),
+    archived:false,
+    materials: pendingTaskFiles.map(name => ({ name })),
+    submissions: []
+  });
+  DB.saveCourses(courses);
+
+  showMsg('taskMsg', 'Actividad publicada. Los estudiantes ya pueden verla.', 'success');
+  document.getElementById('formTask').reset();
+  document.getElementById('taskFilesChosen').textContent = 'Ningún archivo adjuntado.';
+  pendingTaskFiles = [];
+
+  setTimeout(() => {
+    document.getElementById('newTaskCard').style.display = 'none';
+    renderTeacherTasks(course);
+  }, 900);
+});
+
+function renderTeacherTasks(course){
+  const list = document.getElementById('taskList');
+  let tasks = course.tasks;
+  if(!showArchivedTasks) tasks = tasks.filter(t => !t.archived);
+
+  if(tasks.length === 0){
+    list.innerHTML = `<div class="empty-state"><span class="e-icon">🗒️</span>No hay actividades para mostrar. Crea una nueva arriba.</div>`;
+    return;
+  }
+
+  list.innerHTML = tasks.map(t => {
+    const subs = t.submissions || [];
+    const reviewedCount = subs.filter(s => s.review).length;
+    return `
+      <div class="task-card ${t.archived ? 'archived' : ''}" data-task="${t.id}">
+        <div class="task-top">
+          <h4>${escapeHtml(t.title)}</h4>
+          <span class="task-status ${t.archived ? 'status-archived' : 'status-pending'}">${t.archived ? 'Oculta' : 'Activa'}</span>
+        </div>
+        <p class="desc">${escapeHtml(t.desc)}</p>
+        ${t.materials && t.materials.length ? `
+          <div class="materials-mini">
+            ${t.materials.map(m => `<span class="material-chip">📎 ${escapeHtml(m.name)}</span>`).join('')}
+          </div>
+        ` : ''}
+        <div class="task-meta-row">
+          <span>📅 Vence: ${new Date(t.due).toLocaleString('es-PE')}</span>
+          <span>📥 ${subs.length} entrega(s) — ✅ ${reviewedCount} revisada(s)</span>
+        </div>
+        <div class="task-card-actions">
+          <button class="btn-outline" data-toggle-task="${t.id}">${t.archived ? 'Mostrar' : 'Ocultar'}</button>
+          <button class="btn-danger" data-delete-task="${t.id}">Eliminar</button>
+        </div>
+
+        ${subs.length > 0 ? subs.map(s => `
+          <div class="submission-row ${s.review ? 'reviewed' : ''}">
+            <div class="sr-left">
+              <span class="sr-name">${escapeHtml(s.studentName)} ${s.review ? '<span class="review-pill">Revisado</span>' : ''}</span>
+              <span class="sr-meta">📎 ${escapeHtml(s.fileName)} · ${new Date(s.sentAt).toLocaleDateString('es-PE')} a las ${new Date(s.sentAt).toLocaleTimeString('es-PE')}</span>
+            </div>
+            <div class="sr-actions">
+              <button class="btn-outline" data-preview-task="${t.id}" data-preview-student="${s.studentEmail}">👁️ Vista previa</button>
+              <button class="btn-outline" data-download-task="${t.id}" data-download-student="${s.studentEmail}">⬇️ Descargar</button>
+              <button class="btn-outline" data-replace-task="${t.id}" data-replace-student="${s.studentEmail}">📤 Reemplazar archivo</button>
+              <button class="btn-outline" data-review-task="${t.id}" data-review-student="${s.studentEmail}">${s.review ? '✏️ Editar revisión' : '✅ Revisar'}</button>
+            </div>
+          </div>
+        `).join('') : `<p class="desc" style="margin-top:8px;">Aún no hay entregas para esta actividad.</p>`}
+      </div>
+    `;
+  }).join('');
+
+  list.querySelectorAll('[data-toggle-task]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const courses = DB.getCourses();
+      const c = courses.find(cc => cc.id === activeCourseId);
+      const t = c.tasks.find(tt => tt.id === btn.dataset.toggleTask);
+      t.archived = !t.archived;
+      DB.saveCourses(courses);
+      showToast(t.archived ? 'Actividad ocultada para los estudiantes.' : 'Actividad visible nuevamente.');
+      renderTeacherTasks(c);
+    });
+  });
+
+  list.querySelectorAll('[data-delete-task]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ok = confirm('¿Eliminar esta actividad? Se perderán las entregas asociadas.');
+      if(!ok) return;
+      const courses = DB.getCourses();
+      const c = courses.find(cc => cc.id === activeCourseId);
+      c.tasks = c.tasks.filter(tt => tt.id !== btn.dataset.deleteTask);
+      DB.saveCourses(courses);
+      showToast('Actividad eliminada.');
+      renderTeacherTasks(c);
+    });
+  });
+
+  list.querySelectorAll('[data-review-task]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      openReviewModal(btn.dataset.reviewTask, btn.dataset.reviewStudent);
+    });
+  });
+
+  list.querySelectorAll('[data-preview-task]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      openFilePreview(btn.dataset.previewTask, btn.dataset.previewStudent);
+    });
+  });
+
+  list.querySelectorAll('[data-download-task]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      downloadSubmissionFile(btn.dataset.downloadTask, btn.dataset.downloadStudent);
+    });
+  });
+
+  list.querySelectorAll('[data-replace-task]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      replaceSubmissionFile(btn.dataset.replaceTask, btn.dataset.replaceStudent);
+    });
+  });
+
+  renderSubmissionsPanel();
+}
+
+/* =========================================================
+   MODAL: REVISAR / EDITAR REVISIÓN DE UNA ENTREGA
+========================================================= */
+let reviewContext = null; // {courseId, taskId, studentEmail}
+
+function openReviewModal(taskId, studentEmail){
+  const courses = DB.getCourses();
+  const course = courses.find(c => c.tasks.some(t => t.id === taskId));
+  const task = course.tasks.find(t => t.id === taskId);
+  const sub = task.submissions.find(s => s.studentEmail === studentEmail);
+
+  reviewContext = { courseId: course.id, taskId, studentEmail };
+
+  document.getElementById('reviewModalTitle').textContent = sub.review ? 'Editar revisión' : 'Revisar entrega';
+  document.getElementById('reviewModalSub').textContent = `${sub.studentName} — ${sub.fileName}`;
+  document.getElementById('reviewGrade').value = sub.review ? (sub.review.grade || '') : '';
+  document.getElementById('reviewComment').value = sub.review ? (sub.review.comment || '') : '';
+
+  document.getElementById('reviewModal').classList.add('show');
+}
+
+document.getElementById('reviewCancelBtn').addEventListener('click', () => {
+  document.getElementById('reviewModal').classList.remove('show');
+  reviewContext = null;
+});
+
+document.getElementById('reviewModal').addEventListener('click', (e) => {
+  if(e.target.id === 'reviewModal'){
+    document.getElementById('reviewModal').classList.remove('show');
+    reviewContext = null;
+  }
+});
+
+document.getElementById('formReview').addEventListener('submit', (e) => {
+  e.preventDefault();
+  if(!reviewContext) return;
+
+  const grade = document.getElementById('reviewGrade').value.trim();
+  const comment = document.getElementById('reviewComment').value.trim();
+
+  if(!comment){
+    document.getElementById('reviewComment').focus();
+    return;
+  }
+
+  const courses = DB.getCourses();
+  const course = courses.find(c => c.id === reviewContext.courseId);
+  const task = course.tasks.find(t => t.id === reviewContext.taskId);
+  const sub = task.submissions.find(s => s.studentEmail === reviewContext.studentEmail);
+
+  const isEdit = !!sub.review;
+  sub.review = {
+    grade: grade || null,
+    comment,
+    reviewedAt: Date.now(),
+    seenByStudent: false
+  };
+  DB.saveCourses(courses);
+
+  document.getElementById('reviewModal').classList.remove('show');
+  showToast(isEdit ? 'Revisión actualizada. El estudiante verá una notificación.' : 'Se envió la revisión. El estudiante verá una notificación.');
+
+  if(activeCourseId === course.id) renderTeacherTasks(course);
+  reviewContext = null;
+});
+
+/* =========================================================
+   ARCHIVOS DE LA ENTREGA: DESCARGAR / VISTA PREVIA / REEMPLAZAR
+========================================================= */
+const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB, mismo límite que usa el estudiante
+
+function findSubmission(taskId, studentEmail){
+  const courses = DB.getCourses();
+  for(const course of courses){
+    const task = course.tasks.find(t => t.id === taskId);
+    if(task){
+      const sub = (task.submissions || []).find(s => s.studentEmail === studentEmail);
+      if(sub) return { course, task, sub };
+    }
+  }
+  return null;
+}
+
+function downloadSubmissionFile(taskId, studentEmail){
+  const found = findSubmission(taskId, studentEmail);
+  if(!found) return;
+  const { sub } = found;
+
+  if(!sub.fileData){
+    showToast('Este archivo no tiene contenido descargable (entrega antigua sin datos guardados).');
+    return;
+  }
+
+  const link = document.createElement('a');
+  link.href = sub.fileData;
+  link.download = sub.fileName || 'archivo';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function openFilePreview(taskId, studentEmail){
+  const found = findSubmission(taskId, studentEmail);
+  if(!found) return;
+  const { sub } = found;
+
+  document.getElementById('previewModalTitle').textContent = 'Vista previa';
+  document.getElementById('previewModalSub').textContent = `${sub.studentName} — ${sub.fileName}`;
+
+  const body = document.getElementById('previewModalBody');
+  body.innerHTML = '';
+
+  if(!sub.fileData){
+    body.innerHTML = `<p style="color:var(--text-soft); text-align:center; padding:20px;">Esta entrega no tiene un archivo con contenido guardado para previsualizar (puede ser una entrega antigua). Puedes pedirle al estudiante que la reenvíe.</p>`;
+  } else if((sub.fileType || '').startsWith('image/')){
+    body.innerHTML = `<img src="${sub.fileData}" alt="${escapeHtml(sub.fileName)}" style="max-width:100%; max-height:60vh; border-radius:10px;">`;
+  } else if((sub.fileType || '') === 'application/pdf'){
+    body.innerHTML = `<iframe src="${sub.fileData}" style="width:100%; height:60vh; border:none; border-radius:10px; background:#fff;"></iframe>`;
+  } else if((sub.fileType || '').startsWith('video/')){
+    body.innerHTML = `<video src="${sub.fileData}" controls style="max-width:100%; max-height:60vh; border-radius:10px;"></video>`;
+  } else if((sub.fileType || '').startsWith('audio/')){
+    body.innerHTML = `<audio src="${sub.fileData}" controls style="width:100%;"></audio>`;
+  } else if((sub.fileType || '').startsWith('text/')){
+    // Decodificamos el texto desde el data URL para mostrarlo legible
+    try{
+      const base64 = sub.fileData.split(',')[1];
+      const text = decodeURIComponent(escape(window.atob(base64)));
+      body.innerHTML = `<pre style="white-space:pre-wrap; font-size:0.85rem; color:var(--text); width:100%; text-align:left;">${escapeHtml(text)}</pre>`;
+    } catch(err){
+      body.innerHTML = `<p style="color:var(--text-soft);">No se pudo mostrar el contenido del archivo de texto.</p>`;
+    }
+  } else {
+    body.innerHTML = `<p style="color:var(--text-soft); text-align:center; padding:20px;">Este tipo de archivo (${escapeHtml(sub.fileType || 'desconocido')}) no se puede previsualizar directamente aquí. Usa "Descargar" para verlo en tu computadora.</p>`;
+  }
+
+  document.getElementById('previewModal').classList.add('show');
+}
+
+document.getElementById('previewCloseBtn').addEventListener('click', () => {
+  document.getElementById('previewModal').classList.remove('show');
+  document.getElementById('previewModalBody').innerHTML = '';
+});
+document.getElementById('previewModal').addEventListener('click', (e) => {
+  if(e.target.id === 'previewModal'){
+    document.getElementById('previewModal').classList.remove('show');
+    document.getElementById('previewModalBody').innerHTML = '';
+  }
+});
+
+function replaceSubmissionFile(taskId, studentEmail){
+  const found = findSubmission(taskId, studentEmail);
+  if(!found) return;
+
+  const tempInput = document.createElement('input');
+  tempInput.type = 'file';
+  tempInput.addEventListener('change', () => {
+    if(tempInput.files.length === 0) return;
+    const file = tempInput.files[0];
+
+    if(file.size > MAX_FILE_SIZE){
+      showToast('⚠️ El archivo es muy grande (máx. 4MB). Elige uno más pequeño.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const courses = DB.getCourses();
+      const course = courses.find(c => c.id === found.course.id);
+      const task = course.tasks.find(t => t.id === taskId);
+      const sub = task.submissions.find(s => s.studentEmail === studentEmail);
+
+      sub.fileName = file.name;
+      sub.fileType = file.type || '';
+      sub.fileData = reader.result;
+      DB.saveCourses(courses);
+
+      showToast(`✅ Archivo reemplazado por "${file.name}". El cambio quedó guardado en la entrega.`);
+
+      if(activeCourseId === course.id) renderTeacherTasks(course);
+      else renderSubmissionsPanel();
+    };
+    reader.onerror = () => showToast('No se pudo leer el archivo. Intenta de nuevo.');
+    reader.readAsDataURL(file);
+  });
+  tempInput.click();
+}
+
+/* =========================================================
+   PANEL: TAREAS ENVIADAS (vista global de todas las entregas)
+========================================================= */
+function renderSubmissionsPanel(){
+  const grid = document.getElementById('submissionsGrid');
+  const courses = DB.getCourses();
+
+  let rows = [];
+  courses.forEach(c => {
+    c.tasks.forEach(t => {
+      (t.submissions || []).forEach(s => {
+        rows.push({ course:c, task:t, sub:s });
+      });
+    });
+  });
+
+  rows.sort((a,b) => b.sub.sentAt - a.sub.sentAt);
+
+  const badge = document.getElementById('submissionsBadge');
+  const pendingReview = rows.filter(r => !r.sub.review).length;
+  if(pendingReview > 0){ badge.style.display = 'flex'; badge.textContent = pendingReview; }
+  else { badge.style.display = 'none'; }
+
+  if(rows.length === 0){
+    grid.innerHTML = `<div class="empty-state"><span class="e-icon">📭</span>Todavía no hay entregas de estudiantes.</div>`;
+    return;
+  }
+
+  grid.innerHTML = rows.map(r => `
+    <div class="submission-card">
+      <div class="sc-top">
+        <div>
+          <span class="sc-course">${r.course.icon} ${escapeHtml(r.course.name)}</span>
+          <h4>${escapeHtml(r.task.title)}</h4>
+        </div>
+        <span class="task-status ${r.sub.review ? 'status-pending' : 'status-pending'}" style="${r.sub.review ? 'background:rgba(34,197,94,0.18); color:var(--green-accent);' : ''}">${r.sub.review ? 'Revisado' : 'Sin revisar'}</span>
+      </div>
+      <div class="submission-row ${r.sub.review ? 'reviewed' : ''}" style="margin-top:0;">
+        <div class="sr-left">
+          <span class="sr-name">👤 ${escapeHtml(r.sub.studentName)}</span>
+          <span class="sr-meta">📎 ${escapeHtml(r.sub.fileName)} · ${new Date(r.sub.sentAt).toLocaleDateString('es-PE')} a las ${new Date(r.sub.sentAt).toLocaleTimeString('es-PE')}</span>
+        </div>
+        <div class="sr-actions">
+          <button class="btn-outline" data-g-preview-task="${r.task.id}" data-g-preview-student="${r.sub.studentEmail}">👁️ Vista previa</button>
+          <button class="btn-outline" data-g-download-task="${r.task.id}" data-g-download-student="${r.sub.studentEmail}">⬇️ Descargar</button>
+          <button class="btn-outline" data-g-replace-task="${r.task.id}" data-g-replace-student="${r.sub.studentEmail}">📤 Reemplazar archivo</button>
+          <button class="btn-outline" data-g-review-task="${r.task.id}" data-g-review-student="${r.sub.studentEmail}">${r.sub.review ? '✏️ Editar revisión' : '✅ Revisar'}</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  grid.querySelectorAll('[data-g-preview-task]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      openFilePreview(btn.dataset.gPreviewTask, btn.dataset.gPreviewStudent);
+    });
+  });
+
+  grid.querySelectorAll('[data-g-download-task]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      downloadSubmissionFile(btn.dataset.gDownloadTask, btn.dataset.gDownloadStudent);
+    });
+  });
+
+  grid.querySelectorAll('[data-g-replace-task]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      replaceSubmissionFile(btn.dataset.gReplaceTask, btn.dataset.gReplaceStudent);
+    });
+  });
+
+  grid.querySelectorAll('[data-g-review-task]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      openReviewModal(btn.dataset.gReviewTask, btn.dataset.gReviewStudent);
+    });
+  });
+}
+
+/* =========================================================
+   CAMBIAR CONTRASEÑA
+========================================================= */
+document.getElementById('formChangePass').addEventListener('submit', (e) => {
+  e.preventDefault();
+  clearMsg('changePassMsg');
+
+  const teacher = currentTeacher();
+  if(!teacher) return;
+
+  const cur = document.getElementById('curPass').value;
+  const next = document.getElementById('newPass').value;
+
+  if(teacher.password !== cur){
+    showMsg('changePassMsg', 'La contraseña actual no es correcta.', 'error');
+    return;
+  }
+  if(next.length < 6){
+    showMsg('changePassMsg', 'La nueva contraseña debe tener al menos 6 caracteres.', 'error');
+    return;
+  }
+
+  const teachers = DB.getTeachers();
+  const t = teachers.find(x => x.email === teacher.email);
+  t.password = next;
+  DB.saveTeachers(teachers);
+
+  showMsg('changePassMsg', 'Contraseña actualizada correctamente.', 'success');
+  document.getElementById('formChangePass').reset();
+});
+
+/* =========================================================
+   ELIMINAR CUENTA
+========================================================= */
+document.getElementById('btnDeleteAccount').addEventListener('click', () => {
+  const teacher = currentTeacher();
+  if(!teacher) return;
+
+  const sure = confirm('¿Seguro que quieres eliminar tu cuenta de docente? Esta acción no se puede deshacer.');
+  if(!sure) return;
+
+  let teachers = DB.getTeachers();
+  teachers = teachers.filter(t => t.email !== teacher.email);
+  DB.saveTeachers(teachers);
+  DB.clearSession();
+
+  showToast('Tu cuenta fue eliminada.');
+  setTimeout(() => {
+    document.getElementById('navLogout').style.display = 'none';
+    showView('view-login');
+  }, 900);
+});
+
+/* =========================================================
+   CERRAR SESIÓN
+========================================================= */
+document.getElementById('navLogout').addEventListener('click', () => {
+  DB.clearSession();
+  document.getElementById('navLogout').style.display = 'none';
+  showView('view-login');
+});
+
+/* =========================================================
+   INICIO
+========================================================= */
+(function init(){
+  const session = DB.getSession();
+  if(session){
+    const teacher = currentTeacher();
+    if(teacher){ enterDashboard(teacher); return; }
+  }
+  showView('view-register');
+})();
+</script>
+
+</body>
+</html>

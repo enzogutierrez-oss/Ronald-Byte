@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intranet Estudiante - Academia Ronald Byte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styleestudianteV1.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="estudianteV1.html" class="brand-area">
+      <span class="badge">🎓</span>
+      <span class="label">Academia Ronald Byte</span>
+    </a>
+    <div class="topbar-right">
+      <a href="/MATRICULA/matriculaV1.html" class="back-link" id="navBackHome">⬅ Inicio</a>
+      <button class="logout-btn" id="navLogout" style="display:none;">Cerrar sesión</button>
+      <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema claro/oscuro">
+        <svg id="sunIcon" viewBox="0 0 24 24" fill="none" stroke="#fff7d6" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="4"></line>
+          <line x1="12" y1="20" x2="12" y2="23"></line>
+          <line x1="4.2" y1="4.2" x2="6.3" y2="6.3"></line>
+          <line x1="17.7" y1="17.7" x2="19.8" y2="19.8"></line>
+          <line x1="1" y1="12" x2="4" y2="12"></line>
+          <line x1="20" y1="12" x2="23" y2="12"></line>
+          <line x1="4.2" y1="19.8" x2="6.3" y2="17.7"></line>
+          <line x1="17.7" y1="6.3" x2="19.8" y2="4.2"></line>
+        </svg>
+        <svg id="moonIcon" viewBox="0 0 24 24" fill="#dbe6ff" style="display:none;">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== VISTA: REGISTRO ===================== -->
+<section class="view active" id="view-register">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h2>Crear cuenta de estudiante</h2>
+      <p class="sub">Regístrate para acceder a tus cursos y actividades.</p>
+
+      <form id="formRegister" novalidate>
+        <div class="field">
+          <label for="regName">Nombre completo</label>
+          <input type="text" id="regName" placeholder="Ej. María Pérez" autocomplete="name" required>
+        </div>
+        <div class="field">
+          <label for="regEmail">Correo (Gmail)</label>
+          <input type="email" id="regEmail" placeholder="tunombre@gmail.com" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="regPass">Contraseña</label>
+          <div class="pass-wrap">
+            <input type="password" id="regPass" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required minlength="6">
+            <button type="button" class="pass-toggle" data-target="regPass">👁️</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="regPass2">Confirmar contraseña</label>
+          <div class="pass-wrap">
+            <input type="password" id="regPass2" placeholder="Repite tu contraseña" autocomplete="new-password" required minlength="6">
+            <button type="button" class="pass-toggle" data-target="regPass2">👁️</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary">Registrarme</button>
+        <div class="form-msg" id="registerMsg"></div>
+
+        <div class="email-preview" id="emailPreview">
+          <div class="email-head">📧 Correo enviado a tu Gmail</div>
+          <p><strong>De:</strong> Academia Ronald Byte &lt;no-responder@ronaldbyte.edu&gt;</p>
+          <p><strong>Para:</strong> <span id="emailTo"></span></p>
+          <p><strong>Asunto:</strong> Confirma tu cuenta</p>
+          <p>Hola <span id="emailName"></span>, gracias por registrarte. Confirma tu cuenta para activar tu acceso:</p>
+          <button class="confirm-btn" id="btnConfirmEmail">Confirmar mi cuenta</button>
+        </div>
+      </form>
+
+      <div class="switch-line">
+        ¿Ya tienes cuenta? <button id="goLogin">Inicia sesión</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== VISTA: LOGIN ===================== -->
+<section class="view" id="view-login">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h2>Iniciar sesión</h2>
+      <p class="sub">Ingresa con tu correo y contraseña.</p>
+
+      <form id="formLogin" novalidate>
+        <div class="field">
+          <label for="logEmail">Correo</label>
+          <input type="email" id="logEmail" placeholder="tunombre@gmail.com" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="logPass">Contraseña</label>
+          <div class="pass-wrap">
+            <input type="password" id="logPass" placeholder="Tu contraseña" autocomplete="current-password" required>
+            <button type="button" class="pass-toggle" data-target="logPass">👁️</button>
+          </div>
+        </div>
+        <button type="submit" class="btn-primary">Entrar</button>
+        <div class="form-msg" id="loginMsg"></div>
+      </form>
+
+      <div class="switch-line">
+        ¿No tienes cuenta? <button id="goRegister">Regístrate</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== VISTA: DASHBOARD ESTUDIANTE ===================== -->
+<section class="view" id="view-dashboard">
+  <div class="dash-wrap">
+    <div class="welcome-banner">
+      <h1>Bienvenido, <span id="studentNameDisplay"></span> 👋</h1>
+      <p>Este es tu espacio para ver tus cursos, entregar actividades y gestionar tu cuenta.</p>
+    </div>
+
+    <div class="dash-tabs">
+      <button class="dash-tab active" data-panel="panel-courses">📚 Mis Cursos</button>
+      <button class="dash-tab" data-panel="panel-pending">⏳ Tareas Pendientes <span class="tab-badge" id="pendingBadge" style="display:none;">0</span></button>
+      <button class="dash-tab" data-panel="panel-account">⚙️ Mi Cuenta</button>
+    </div>
+
+    <!-- Panel: lista de cursos -->
+    <div class="panel active" id="panel-courses">
+      <h2 class="section-heading">Cursos asignados</h2>
+      <div class="courses-grid" id="coursesGrid"></div>
+    </div>
+
+    <!-- Panel: tareas pendientes (todas, de todos los cursos) -->
+    <div class="panel" id="panel-pending">
+      <h2 class="section-heading">Tareas pendientes por entregar</h2>
+      <div id="pendingList"></div>
+    </div>
+
+    <!-- Panel: detalle de un curso -->
+    <div class="panel" id="panel-course-detail">
+      <button class="back-courses" id="backToCourses">⬅ Volver a mis cursos</button>
+      <div class="course-detail-head">
+        <h2 id="detailCourseName"></h2>
+        <p id="detailCourseDesc"></p>
+      </div>
+      <div class="task-list" id="taskList"></div>
+    </div>
+
+    <!-- Panel: cuenta -->
+    <div class="panel" id="panel-account">
+      <h2 class="section-heading">Mi Cuenta</h2>
+      <div class="account-grid">
+        <div class="account-card">
+          <h3>Cambiar contraseña</h3>
+          <form id="formChangePass" novalidate>
+            <div class="field">
+              <label for="curPass">Contraseña actual</label>
+              <div class="pass-wrap">
+                <input type="password" id="curPass" required>
+                <button type="button" class="pass-toggle" data-target="curPass">👁️</button>
+              </div>
+            </div>
+            <div class="field">
+              <label for="newPass">Nueva contraseña</label>
+              <div class="pass-wrap">
+                <input type="password" id="newPass" required minlength="6">
+                <button type="button" class="pass-toggle" data-target="newPass">👁️</button>
+              </div>
+            </div>
+            <button type="submit" class="btn-primary">Actualizar contraseña</button>
+            <div class="form-msg" id="changePassMsg"></div>
+          </form>
+        </div>
+
+        <div class="account-card danger-zone">
+          <h3>Eliminar cuenta</h3>
+          <p>Esta acción es permanente y borrará tu cuenta, tus entregas y tu acceso a la intranet.</p>
+          <button class="btn-danger" id="btnDeleteAccount">Eliminar mi cuenta</button>
+          <div class="form-msg" id="deleteMsg"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="app-footer">
+  © 2026 Academia Ronald Byte. Intranet del estudiante.
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   "BASE DE DATOS" LOCAL
+   Todo se guarda en localStorage del navegador, ya que este
+   proyecto es solo HTML/CSS/JS sin servidor backend.
+   Esta misma base de datos la comparte la intranet del
+   docente (intranet-docente.html), por eso usan las mismas
+   claves de almacenamiento.
+========================================================= */
+
+const DB = {
+  KEY_USERS: 'arb_users',
+  KEY_COURSES: 'arb_courses',
+  KEY_SESSION: 'arb_session',
+
+  getUsers(){ return JSON.parse(localStorage.getItem(this.KEY_USERS) || '[]'); },
+  saveUsers(u){ localStorage.setItem(this.KEY_USERS, JSON.stringify(u)); },
+
+  getCourses(){
+    let c = JSON.parse(localStorage.getItem(this.KEY_COURSES) || 'null');
+    if(!c){
+      c = seedCourses();
+      this.saveCourses(c);
+    }
+    return c;
+  },
+  saveCourses(c){ localStorage.setItem(this.KEY_COURSES, JSON.stringify(c)); },
+
+  getSession(){ return JSON.parse(localStorage.getItem(this.KEY_SESSION) || 'null'); },
+  setSession(email){ localStorage.setItem(this.KEY_SESSION, JSON.stringify({email})); },
+  clearSession(){ localStorage.removeItem(this.KEY_SESSION); }
+};
+
+const EDIT_WINDOW_MS = 1000 * 60 * 10; // 10 minutos para editar tras enviar
+
+function seedCourses(){
+  const now = Date.now();
+  return [
+    {
+      id: 'c1',
+      name: 'Fundamentos de Computación',
+      desc: 'Bases esenciales sobre hardware, software y el entorno digital.',
+      icon: '💻',
+      archived:false,
+      materials:[],
+      tasks: [
+        { id:'t1', title:'Cuestionario: partes de la computadora', desc:'Responde el cuestionario sobre hardware básico.', due: now + 1000*60*60*26, createdAt: now, archived:false, submissions:[] },
+        { id:'t2', title:'Ensayo corto: historia de la computación', desc:'Entrega un documento de máximo 2 páginas.', due: now + 1000*60*60*4, createdAt: now, archived:false, submissions:[] }
+      ]
+    },
+    {
+      id: 'c2',
+      name: 'Algoritmos y Programación',
+      desc: 'Pensamiento lógico y primeros pasos en desarrollo de software.',
+      icon: '🧠',
+      archived:false,
+      materials:[],
+      tasks: [
+        { id:'t3', title:'Diagrama de flujo: suma de dos números', desc:'Sube tu diagrama en imagen o PDF.', due: now + 1000*60*60*48, createdAt: now, archived:false, submissions:[] }
+      ]
+    },
+    {
+      id: 'c3',
+      name: 'Redes de Computadoras',
+      desc: 'Cómo se conectan e intercambian información los equipos.',
+      icon: '🌐',
+      archived:false,
+      materials:[],
+      tasks: [
+        { id:'t4', title:'Mapa de red de tu casa', desc:'Dibuja y sube el mapa de tu red doméstica.', due: now - 1000*60*60*2, createdAt: now, archived:false, submissions:[] }
+      ]
+    }
+  ];
+}
+
+/* =========================================================
+   UTILIDADES
+========================================================= */
+
+function showToast(msg, type){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' '+type : '');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=> t.classList.remove('show'), 4200);
+}
+
+function showView(id){
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showMsg(elId, text, type){
+  const el = document.getElementById(elId);
+  el.textContent = text;
+  el.className = 'form-msg show ' + type;
+}
+
+function clearMsg(elId){
+  const el = document.getElementById(elId);
+  el.className = 'form-msg';
+  el.textContent = '';
+}
+
+function isValidGmail(email){
+  return /^[^\s@]+@gmail\.com$/i.test(email.trim());
+}
+
+function formatCountdown(ms){
+  if(ms <= 0) return null;
+  const totalSeconds = Math.floor(ms/1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const mins = Math.floor((totalSeconds % 3600) / 60);
+  const secs = totalSeconds % 60;
+  if(days > 0) return `${days}d ${hours}h ${mins}m`;
+  if(hours > 0) return `${hours}h ${mins}m ${secs}s`;
+  return `${mins}m ${secs}s`;
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function findMySubmission(task, email){
+  return (task.submissions || []).find(s => s.studentEmail === email) || null;
+}
+
+/* =========================================================
+   TEMA CLARO / OSCURO
+========================================================= */
+const themeToggle = document.getElementById('themeToggle');
+const sunIcon = document.getElementById('sunIcon');
+const moonIcon = document.getElementById('moonIcon');
+const root = document.documentElement;
+
+function setTheme(theme){
+  if(theme === 'dark'){
+    root.setAttribute('data-theme','dark');
+    sunIcon.style.display='none';
+    moonIcon.style.display='block';
+  } else {
+    root.removeAttribute('data-theme');
+    sunIcon.style.display='block';
+    moonIcon.style.display='none';
+  }
+}
+setTheme('light');
+themeToggle.addEventListener('click', () => {
+  const isDark = root.getAttribute('data-theme') === 'dark';
+  setTheme(isDark ? 'light' : 'dark');
+});
+
+/* =========================================================
+   MOSTRAR / OCULTAR CONTRASEÑA
+========================================================= */
+document.querySelectorAll('.pass-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const input = document.getElementById(btn.dataset.target);
+    if(input.type === 'password'){
+      input.type = 'text';
+      btn.textContent = '🙈';
+    } else {
+      input.type = 'password';
+      btn.textContent = '👁️';
+    }
+  });
+});
+
+/* =========================================================
+   NAVEGACIÓN ENTRE VISTAS DE AUTENTICACIÓN
+========================================================= */
+document.getElementById('goLogin').addEventListener('click', () => {
+  clearMsg('loginMsg');
+  showView('view-login');
+});
+document.getElementById('goRegister').addEventListener('click', () => {
+  clearMsg('registerMsg');
+  document.getElementById('emailPreview').classList.remove('show');
+  showView('view-register');
+});
+
+/* =========================================================
+   REGISTRO DE ESTUDIANTE + "CORREO" DE CONFIRMACIÓN SIMULADO
+========================================================= */
+let pendingConfirmation = null;
+
+document.getElementById('formRegister').addEventListener('submit', (e) => {
+  e.preventDefault();
+  clearMsg('registerMsg');
+
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('regPass').value;
+  const pass2 = document.getElementById('regPass2').value;
+
+  if(!name || !email || !pass || !pass2){
+    showMsg('registerMsg', 'Completa todos los campos.', 'error');
+    return;
+  }
+  if(!isValidGmail(email)){
+    showMsg('registerMsg', 'Usa un correo de Gmail válido (ejemplo@gmail.com).', 'error');
+    return;
+  }
+  if(pass.length < 6){
+    showMsg('registerMsg', 'La contraseña debe tener al menos 6 caracteres.', 'error');
+    return;
+  }
+  if(pass !== pass2){
+    showMsg('registerMsg', 'Las contraseñas no coinciden.', 'error');
+    return;
+  }
+
+  const users = DB.getUsers();
+  if(users.find(u => u.email === email)){
+    showMsg('registerMsg', 'Ya existe una cuenta registrada con ese correo.', 'error');
+    return;
+  }
+
+  const newUser = { name, email, password: pass, confirmed:false, createdAt: Date.now() };
+  users.push(newUser);
+  DB.saveUsers(users);
+
+  pendingConfirmation = email;
+
+  document.getElementById('emailTo').textContent = email;
+  document.getElementById('emailName').textContent = name;
+  document.getElementById('emailPreview').classList.add('show');
+
+  showMsg('registerMsg', 'Cuenta creada. Revisa el correo simulado abajo para confirmarla.', 'success');
+});
+
+document.getElementById('btnConfirmEmail').addEventListener('click', () => {
+  if(!pendingConfirmation) return;
+  const users = DB.getUsers();
+  const u = users.find(x => x.email === pendingConfirmation);
+  if(u){
+    u.confirmed = true;
+    DB.saveUsers(users);
+  }
+  document.getElementById('emailPreview').classList.remove('show');
+  showMsg('registerMsg', '¡Cuenta confirmada! Ya puedes iniciar sesión.', 'success');
+  pendingConfirmation = null;
+  setTimeout(() => showView('view-login'), 1400);
+});
+
+/* =========================================================
+   LOGIN
+========================================================= */
+document.getElementById('formLogin').addEventListener('submit', (e) => {
+  e.preventDefault();
+  clearMsg('loginMsg');
+
+  const email = document.getElementById('logEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('logPass').value;
+
+  const users = DB.getUsers();
+  const user = users.find(u => u.email === email);
+
+  if(!user){
+    showMsg('loginMsg', 'No existe una cuenta con ese correo.', 'error');
+    return;
+  }
+  if(!user.confirmed){
+    showMsg('loginMsg', 'Debes confirmar tu cuenta desde el correo antes de iniciar sesión.', 'error');
+    return;
+  }
+  if(user.password !== pass){
+    showMsg('loginMsg', 'Contraseña incorrecta.', 'error');
+    return;
+  }
+
+  DB.setSession(email);
+  enterDashboard(user);
+});
+
+/* =========================================================
+   ENTRAR AL DASHBOARD
+========================================================= */
+let masterInterval = null;
+
+function enterDashboard(user){
+  document.getElementById('studentNameDisplay').textContent = user.name;
+  document.getElementById('navLogout').style.display = 'inline-block';
+  document.getElementById('navBackHome').textContent = '⬅ Inicio';
+  showView('view-dashboard');
+  document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.dash-tab[data-panel="panel-courses"]').classList.add('active');
+  switchPanel('panel-courses');
+  refreshAll();
+
+  clearInterval(masterInterval);
+  masterInterval = setInterval(refreshTimers, 1000);
+}
+
+function currentUser(){
+  const session = DB.getSession();
+  if(!session) return null;
+  const users = DB.getUsers();
+  return users.find(u => u.email === session.email) || null;
+}
+
+function refreshAll(){
+  renderCourses();
+  renderPendingTab();
+  if(activeCourseId){
+    const course = DB.getCourses().find(c => c.id === activeCourseId);
+    if(course) renderTasks(course);
+  }
+}
+
+function refreshTimers(){
+  // Solo refresca los contadores visibles sin re-renderizar todo
+  if(document.getElementById('panel-course-detail').classList.contains('active') && activeCourseId){
+    const course = DB.getCourses().find(c => c.id === activeCourseId);
+    if(course) updateCountdownsAndEditWindows(course);
+  }
+  if(document.getElementById('panel-pending').classList.contains('active')){
+    renderPendingTab();
+  }
+}
+
+/* =========================================================
+   TABS DEL DASHBOARD
+========================================================= */
+document.querySelectorAll('.dash-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    switchPanel(tab.dataset.panel);
+    if(tab.dataset.panel === 'panel-pending') renderPendingTab();
+  });
+});
+
+function switchPanel(panelId){
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+}
+
+/* =========================================================
+   RENDER CURSOS (el estudiante NO puede eliminar cursos,
+   y solo ve los que el docente no haya archivado)
+========================================================= */
+function renderCourses(){
+  const grid = document.getElementById('coursesGrid');
+  const user = currentUser();
+  if(!user) return;
+  const courses = DB.getCourses().filter(c => !c.archived);
+
+  if(courses.length === 0){
+    grid.innerHTML = `<div class="empty-state"><span class="e-icon">📭</span>Todavía no tienes cursos asignados.</div>`;
+    return;
+  }
+
+  grid.innerHTML = courses.map(c => {
+    const visibleTasks = c.tasks.filter(t => !t.archived);
+    const pendingCount = visibleTasks.filter(t => !findMySubmission(t, user.email)).length;
+    return `
+      <div class="course-card" data-course="${c.id}">
+        <span class="c-icon">${c.icon}</span>
+        <h3>${escapeHtml(c.name)}</h3>
+        <p>${escapeHtml(c.desc)}</p>
+        <div class="c-meta">
+          <span>${visibleTasks.length} actividad(es)</span>
+          ${pendingCount > 0 ? `<span class="pending-badge">${pendingCount} pendiente(s)</span>` : '<span>✅ Al día</span>'}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  grid.querySelectorAll('.course-card').forEach(card => {
+    card.addEventListener('click', () => openCourse(card.dataset.course));
+  });
+
+  updatePendingBadgeCount();
+}
+
+function updatePendingBadgeCount(){
+  const user = currentUser();
+  if(!user) return;
+  const courses = DB.getCourses().filter(c => !c.archived);
+  let count = 0;
+  courses.forEach(c => {
+    c.tasks.filter(t => !t.archived).forEach(t => {
+      if(!findMySubmission(t, user.email)) count++;
+    });
+  });
+  const badge = document.getElementById('pendingBadge');
+  if(count > 0){
+    badge.style.display = 'flex';
+    badge.textContent = count;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+/* =========================================================
+   TAB: TAREAS PENDIENTES (vista global de todos los cursos)
+========================================================= */
+function renderPendingTab(){
+  const list = document.getElementById('pendingList');
+  const user = currentUser();
+  if(!user) return;
+  const courses = DB.getCourses().filter(c => !c.archived);
+
+  let rows = [];
+  courses.forEach(c => {
+    c.tasks.filter(t => !t.archived).forEach(t => {
+      const mySub = findMySubmission(t, user.email);
+      if(!mySub){
+        rows.push({ course:c, task:t });
+      }
+    });
+  });
+
+  if(rows.length === 0){
+    list.innerHTML = `<div class="empty-state"><span class="e-icon">🎉</span>No tienes tareas pendientes. ¡Estás al día!</div>`;
+    return;
+  }
+
+  list.innerHTML = rows.map(r => {
+    const remaining = r.task.due - Date.now();
+    const overdue = remaining <= 0;
+    const txt = overdue ? '⏰ Vencido' : `⏳ ${formatCountdown(remaining)} restantes`;
+    return `
+      <div class="pending-task-row" data-course="${r.course.id}">
+        <div class="ptr-left">
+          <span class="ptr-course">${r.course.icon} ${escapeHtml(r.course.name)}</span>
+          <h4>${escapeHtml(r.task.title)}</h4>
+        </div>
+        <span class="task-status ${overdue ? 'status-late' : 'status-pending'}">${txt}</span>
+      </div>
+    `;
+  }).join('');
+
+  list.querySelectorAll('.pending-task-row').forEach(row => {
+    row.addEventListener('click', () => openCourse(row.dataset.course));
+  });
+}
+
+/* =========================================================
+   DETALLE DE CURSO + TAREAS + CRONÓMETRO + SUBIDA DE ARCHIVO
+   + VENTANA DE EDICIÓN + REVISIÓN DEL DOCENTE
+========================================================= */
+let activeCourseId = null;
+
+function openCourse(courseId){
+  activeCourseId = courseId;
+  const courses = DB.getCourses();
+  const course = courses.find(c => c.id === courseId);
+  if(!course) return;
+
+  document.getElementById('detailCourseName').textContent = `${course.icon} ${course.name}`;
+  document.getElementById('detailCourseDesc').textContent = course.desc;
+
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-course-detail').classList.add('active');
+  document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+
+  renderTasks(course);
+}
+
+document.getElementById('backToCourses').addEventListener('click', () => {
+  activeCourseId = null;
+  document.querySelector('.dash-tab[data-panel="panel-courses"]').classList.add('active');
+  switchPanel('panel-courses');
+  refreshAll();
+});
+
+function renderTasks(course){
+  const list = document.getElementById('taskList');
+  const user = currentUser();
+  if(!user) return;
+
+  const visibleTasks = course.tasks.filter(t => !t.archived);
+
+  if(visibleTasks.length === 0){
+    list.innerHTML = `<div class="empty-state"><span class="e-icon">🗒️</span>Este curso aún no tiene actividades asignadas.</div>`;
+    return;
+  }
+
+  list.innerHTML = visibleTasks.map(t => {
+    const sub = findMySubmission(t, user.email);
+    const submitted = !!sub;
+    const overdue = !submitted && (t.due - Date.now()) <= 0;
+    const hasReview = submitted && sub.review;
+    const unseenReview = hasReview && sub.review.seenByStudent === false;
+
+    let statusClass = 'status-pending';
+    let statusText = 'Pendiente';
+    if(submitted){
+      statusClass = hasReview ? 'status-reviewed' : 'status-submitted';
+      statusText = hasReview ? 'Revisado' : 'Entregado';
+    } else if(overdue){
+      statusClass = 'status-late';
+      statusText = 'Vencido';
+    }
+
+    let cardClasses = 'task-card';
+    if(hasReview) cardClasses += ' has-review';
+    if(unseenReview) cardClasses += ' has-unseen-review';
+
+    let editWindowHtml = '';
+    let canEdit = false;
+    if(submitted && !hasReview){
+      const editDeadline = sub.sentAt + EDIT_WINDOW_MS;
+      const remainingEdit = editDeadline - Date.now();
+      if(remainingEdit > 0){
+        canEdit = true;
+        editWindowHtml = `
+          <div class="edit-window-box" id="ewbox-${t.id}">
+            <span class="ew-text">¿Olvidaste algo? Puedes editar tu envío por <strong id="ewtime-${t.id}">${formatCountdown(remainingEdit)}</strong> más.</span>
+            <button class="edit-btn" data-edit-task="${t.id}">✏️ Editar envío</button>
+          </div>
+        `;
+      }
+    }
+
+    let reviewHtml = '';
+    if(hasReview){
+      reviewHtml = `
+        <div class="review-box">
+          <div class="rb-head">🧑‍🏫 Revisión del docente ${unseenReview ? '<span class="new-dot"></span>' : ''}</div>
+          ${sub.review.grade ? `<span class="rb-grade">Nota: ${escapeHtml(sub.review.grade)}</span>` : ''}
+          <p>${escapeHtml(sub.review.comment || 'El docente marcó tu trabajo como revisado.')}</p>
+          <div class="rb-time">Revisado el ${new Date(sub.review.reviewedAt).toLocaleString('es-PE')}</div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="${cardClasses}" data-task="${t.id}">
+        <div class="task-top">
+          <h4>${escapeHtml(t.title)} ${unseenReview ? '<span class="new-dot"></span>' : ''}</h4>
+          <span class="task-status ${statusClass}">${statusText}</span>
+        </div>
+        <p class="desc">${escapeHtml(t.desc)}</p>
+        ${!submitted ? `<div class="countdown" data-due="${t.due}" id="cd-${t.id}"></div>` : ''}
+        ${submitted ? `
+          <div class="submitted-info" id="subinfo-${t.id}">✅ Enviado: ${escapeHtml(sub.fileName)} — ${new Date(sub.sentAt).toLocaleString('es-PE')}</div>
+          ${editWindowHtml}
+        ` : `
+          <div class="upload-row">
+            <label class="file-label" for="file-${t.id}">📎 Elegir archivo</label>
+            <input type="file" id="file-${t.id}" style="display:none;">
+            <span class="file-chosen" id="chosen-${t.id}">Ningún archivo seleccionado</span>
+            <button class="send-btn" id="send-${t.id}" disabled>Enviar trabajo</button>
+          </div>
+        `}
+        ${reviewHtml}
+      </div>
+    `;
+  }).join('');
+
+  // Marcar como vistas las revisiones nuevas (tras pequeño delay para que el usuario note el destello)
+  setTimeout(() => {
+    const courses = DB.getCourses();
+    const c = courses.find(cc => cc.id === activeCourseId);
+    if(!c) return;
+    let changed = false;
+    c.tasks.forEach(t => {
+      const s = findMySubmission(t, user.email);
+      if(s && s.review && s.review.seenByStudent === false){
+        s.review.seenByStudent = true;
+        changed = true;
+      }
+    });
+    if(changed) DB.saveCourses(courses);
+  }, 2200);
+
+  // Listeners de subida de archivo por tarea (solo las no entregadas)
+  visibleTasks.forEach(t => {
+    const sub = findMySubmission(t, user.email);
+    if(sub) return;
+
+    const fileInput = document.getElementById(`file-${t.id}`);
+    const chosenLabel = document.getElementById(`chosen-${t.id}`);
+    const sendBtn = document.getElementById(`send-${t.id}`);
+
+    fileInput.addEventListener('change', () => {
+      if(fileInput.files.length > 0){
+        chosenLabel.textContent = fileInput.files[0].name;
+        sendBtn.disabled = false;
+      } else {
+        chosenLabel.textContent = 'Ningún archivo seleccionado';
+        sendBtn.disabled = true;
+      }
+    });
+
+    sendBtn.addEventListener('click', () => {
+      if(fileInput.files.length === 0) return;
+      submitTask(t.id, fileInput.files[0].name);
+    });
+  });
+
+  // Listeners de edición de envío
+  list.querySelectorAll('[data-edit-task]').forEach(btn => {
+    btn.addEventListener('click', () => openEditSubmission(btn.dataset.editTask));
+  });
+
+  updateCountdownsAndEditWindows(course);
+}
+
+function submitTask(taskId, fileName){
+  const user = currentUser();
+  const courses = DB.getCourses();
+  const c = courses.find(cc => cc.id === activeCourseId);
+  const task = c.tasks.find(tt => tt.id === taskId);
+
+  if(!task.submissions) task.submissions = [];
+  task.submissions.push({
+    studentEmail: user.email,
+    studentName: user.name,
+    fileName,
+    sentAt: Date.now(),
+    review: null
+  });
+  DB.saveCourses(courses);
+
+  showToast('✅ Tu trabajo se envió satisfactoriamente.');
+  renderTasks(c);
+}
+
+function openEditSubmission(taskId){
+  const courses = DB.getCourses();
+  const c = courses.find(cc => cc.id === activeCourseId);
+  const task = c.tasks.find(tt => tt.id === taskId);
+  const user = currentUser();
+  const sub = findMySubmission(task, user.email);
+  if(!sub) return;
+
+  const editDeadline = sub.sentAt + EDIT_WINDOW_MS;
+  if(Date.now() > editDeadline){
+    showToast('El tiempo para editar tu envío ya terminó.');
+    renderTasks(c);
+    return;
+  }
+
+  // Reemplazamos el input de archivo de forma simple: pedimos un nuevo archivo
+  const tempInput = document.createElement('input');
+  tempInput.type = 'file';
+  tempInput.addEventListener('change', () => {
+    if(tempInput.files.length === 0) return;
+    sub.fileName = tempInput.files[0].name;
+    sub.sentAt = Date.now(); // reinicia ventana de edición desde el nuevo envío
+    DB.saveCourses(courses);
+    showToast('✅ Tu envío fue actualizado correctamente.');
+    renderTasks(c);
+  });
+  tempInput.click();
+}
+
+function updateCountdownsAndEditWindows(course){
+  const user = currentUser();
+  if(!user) return;
+
+  course.tasks.filter(t => !t.archived).forEach(t => {
+    const sub = findMySubmission(t, user.email);
+
+    if(!sub){
+      const el = document.getElementById(`cd-${t.id}`);
+      if(!el) return;
+      const remaining = t.due - Date.now();
+      const txt = formatCountdown(remaining);
+      if(txt === null){
+        el.textContent = '⏰ Tiempo de entrega vencido';
+        el.classList.add('urgent');
+        const card = el.closest('.task-card');
+        const statusEl = card ? card.querySelector('.task-status') : null;
+        if(statusEl){ statusEl.textContent = 'Vencido'; statusEl.className = 'task-status status-late'; }
+      } else {
+        el.textContent = `⏳ Tiempo restante: ${txt}`;
+        el.classList.toggle('urgent', remaining < 1000*60*60*3);
+      }
+      return;
+    }
+
+    if(sub.review) return; // ya revisado, no hay ventana de edición
+
+    const ewtimeEl = document.getElementById(`ewtime-${t.id}`);
+    if(!ewtimeEl) return;
+    const editDeadline = sub.sentAt + EDIT_WINDOW_MS;
+    const remainingEdit = editDeadline - Date.now();
+    if(remainingEdit <= 0){
+      const box = document.getElementById(`ewbox-${t.id}`);
+      if(box) box.remove();
+    } else {
+      ewtimeEl.textContent = formatCountdown(remainingEdit);
+    }
+  });
+}
+
+/* =========================================================
+   CAMBIAR CONTRASEÑA
+========================================================= */
+document.getElementById('formChangePass').addEventListener('submit', (e) => {
+  e.preventDefault();
+  clearMsg('changePassMsg');
+
+  const user = currentUser();
+  if(!user) return;
+
+  const cur = document.getElementById('curPass').value;
+  const next = document.getElementById('newPass').value;
+
+  if(user.password !== cur){
+    showMsg('changePassMsg', 'La contraseña actual no es correcta.', 'error');
+    return;
+  }
+  if(next.length < 6){
+    showMsg('changePassMsg', 'La nueva contraseña debe tener al menos 6 caracteres.', 'error');
+    return;
+  }
+
+  const users = DB.getUsers();
+  const u = users.find(x => x.email === user.email);
+  u.password = next;
+  DB.saveUsers(users);
+
+  showMsg('changePassMsg', 'Contraseña actualizada correctamente.', 'success');
+  document.getElementById('formChangePass').reset();
+});
+
+/* =========================================================
+   ELIMINAR CUENTA
+========================================================= */
+document.getElementById('btnDeleteAccount').addEventListener('click', () => {
+  const user = currentUser();
+  if(!user) return;
+
+  const sure = confirm('¿Seguro que quieres eliminar tu cuenta? Esta acción no se puede deshacer.');
+  if(!sure) return;
+
+  let users = DB.getUsers();
+  users = users.filter(u => u.email !== user.email);
+  DB.saveUsers(users);
+  DB.clearSession();
+
+  showToast('Tu cuenta fue eliminada.');
+  setTimeout(() => {
+    clearInterval(masterInterval);
+    document.getElementById('navLogout').style.display = 'none';
+    showView('view-login');
+  }, 900);
+});
+
+/* =========================================================
+   CERRAR SESIÓN
+========================================================= */
+document.getElementById('navLogout').addEventListener('click', () => {
+  DB.clearSession();
+  clearInterval(masterInterval);
+  document.getElementById('navLogout').style.display = 'none';
+  showView('view-login');
+});
+
+/* =========================================================
+   INICIO: revisar si ya hay sesión activa
+========================================================= */
+(function init(){
+  const session = DB.getSession();
+  if(session){
+    const user = currentUser();
+    if(user){
+      enterDashboard(user);
+      return;
+    }
+  }
+  showView('view-register');
+})();
+</script>
+
+</body>
+</html>
