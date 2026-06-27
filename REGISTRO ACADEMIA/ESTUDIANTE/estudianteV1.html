@@ -50,7 +50,7 @@
       <form id="formRegister" novalidate>
         <div class="field">
           <label for="regName">Nombre completo</label>
-          <input type="text" id="regName" placeholder="Ej. María Pérez" autocomplete="name" required>
+          <input type="text" id="regName" placeholder="Ej. Enzo Zarate" autocomplete="name" required>
         </div>
         <div class="field">
           <label for="regEmail">Correo (Gmail)</label>
@@ -227,6 +227,26 @@ const DB = {
     return c;
   },
   saveCourses(c){ localStorage.setItem(this.KEY_COURSES, JSON.stringify(c)); },
+
+  // Migración: limpia los cursos de ejemplo que quedaron guardados de
+  // versiones anteriores (c1/c2/c3 con esos nombres exactos), para que
+  // la intranet quede realmente vacía hasta que el docente cree algo.
+  cleanupLegacySampleCourses(){
+    const FLAG = 'arb_legacy_samples_cleaned_v1';
+    if(localStorage.getItem(FLAG)) return;
+    const courses = this.getCourses();
+    const sampleIds = new Set(['c1','c2','c3']);
+    const sampleNames = new Set([
+      'Fundamentos de Computación',
+      'Algoritmos y Programación',
+      'Redes de Computadoras'
+    ]);
+    const filtered = courses.filter(c => !(sampleIds.has(c.id) && sampleNames.has(c.name) && (!c.tasks || !c.tasks.some(t => t.submissions && t.submissions.length > 0))));
+    if(filtered.length !== courses.length){
+      this.saveCourses(filtered);
+    }
+    localStorage.setItem(FLAG, '1');
+  },
 
   getSession(){ return JSON.parse(localStorage.getItem(this.KEY_SESSION) || 'null'); },
   setSession(email){ localStorage.setItem(this.KEY_SESSION, JSON.stringify({email})); },
@@ -702,6 +722,20 @@ function renderTasks(course){
       `;
     }
 
+    let materialsHtml = '';
+    if(t.materials && t.materials.length > 0){
+      materialsHtml = `
+        <div class="materials-mini">
+          ${t.materials.map((m, idx) => `
+            <span class="material-chip">
+              📎 ${escapeHtml(m.name)}
+              ${m.data ? `<button type="button" class="material-download-btn" data-material-task="${t.id}" data-material-index="${idx}">⬇️ Descargar</button>` : ''}
+            </span>
+          `).join('')}
+        </div>
+      `;
+    }
+
     return `
       <div class="${cardClasses}" data-task="${t.id}">
         <div class="task-top">
@@ -709,6 +743,7 @@ function renderTasks(course){
           <span class="task-status ${statusClass}">${statusText}</span>
         </div>
         <p class="desc">${escapeHtml(t.desc)}</p>
+        ${materialsHtml}
         ${!submitted ? `<div class="countdown" data-due="${t.due}" id="cd-${t.id}"></div>` : ''}
         ${submitted ? `
           <div class="submitted-info" id="subinfo-${t.id}">✅ Enviado: ${escapeHtml(sub.fileName)} — ${new Date(sub.sentAt).toLocaleString('es-PE')}</div>
@@ -772,6 +807,27 @@ function renderTasks(course){
   // Listeners de edición de envío
   list.querySelectorAll('[data-edit-task]').forEach(btn => {
     btn.addEventListener('click', () => openEditSubmission(btn.dataset.editTask));
+  });
+
+  // Listeners de descarga de material de apoyo subido por el docente
+  list.querySelectorAll('.material-download-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const taskId = btn.dataset.materialTask;
+      const idx = parseInt(btn.dataset.materialIndex, 10);
+      const t2 = course.tasks.find(tt => tt.id === taskId);
+      if(!t2 || !t2.materials || !t2.materials[idx]) return;
+      const material = t2.materials[idx];
+      if(!material.data){
+        showToast('Este material no tiene contenido descargable.');
+        return;
+      }
+      const link = document.createElement('a');
+      link.href = material.data;
+      link.download = material.name || 'material';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
   });
 
   updateCountdownsAndEditWindows(course);
@@ -953,6 +1009,8 @@ document.getElementById('navLogout').addEventListener('click', () => {
    INICIO: revisar si ya hay sesión activa
 ========================================================= */
 (function init(){
+  DB.cleanupLegacySampleCourses();
+
   const session = DB.getSession();
   if(session){
     const user = currentUser();
