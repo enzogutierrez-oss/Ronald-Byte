@@ -1,1336 +1,827 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Intranet Estudiante - Academia Ronald Byte</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styleestudianteV1.css">
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCaZAtITUFnlDjcRhlBcC8FMjeyN37Gva4",
-    authDomain: "academia-ronald-byte.firebaseapp.com",
-    projectId: "academia-ronald-byte",
-    storageBucket: "academia-ronald-byte.firebasestorage.app",
-    messagingSenderId: "685637296313",
-    appId: "1:685637296313:web:31d03ef2e10972453dbb68"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const firestore = getFirestore(app);
-  const auth = getAuth(app);
-  const googleProvider = new GoogleAuthProvider();
-
-  // Exponemos lo necesario al script clásico (no-módulo) de abajo,
-  // ya que este bloque type="module" corre en su propio ámbito.
-  window.__firebase = { firestore, doc, getDoc, setDoc, updateDoc, onSnapshot, auth, googleProvider, signInWithPopup, signOut };
-  window.dispatchEvent(new Event('firebase-ready'));
-</script>
-</head>
-<body>
-
-<div id="cloudLoadingOverlay" style="position:fixed; inset:0; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; z-index:9999;">
-  <div style="font-size:2.4rem;">🎓</div>
-  <div style="font-weight:700; color:var(--text-soft); font-size:0.95rem;">Conectando con la Academia...</div>
-</div>
-
-<header class="topbar">
-  <div class="topbar-inner">
-    <a href="../../index.html" class="brand-area">
-      <span class="badge">🎓</span>
-      <span class="label">Academia Ronald Byte</span>
-    </a>
-    <div class="topbar-right">
-      <a href="../../MATRICULA/matriculaV1.html" class="back-link" id="navBackHome">⬅ Inicio</a>
-      <button class="logout-btn" id="navLogout" style="display:none;">Cerrar sesión</button>
-      <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema claro/oscuro">
-        <svg id="sunIcon" viewBox="0 0 24 24" fill="none" stroke="#fff7d6" stroke-width="2" stroke-linecap="round">
-          <circle cx="12" cy="12" r="5"></circle>
-          <line x1="12" y1="1" x2="12" y2="4"></line>
-          <line x1="12" y1="20" x2="12" y2="23"></line>
-          <line x1="4.2" y1="4.2" x2="6.3" y2="6.3"></line>
-          <line x1="17.7" y1="17.7" x2="19.8" y2="19.8"></line>
-          <line x1="1" y1="12" x2="4" y2="12"></line>
-          <line x1="20" y1="12" x2="23" y2="12"></line>
-          <line x1="4.2" y1="19.8" x2="6.3" y2="17.7"></line>
-          <line x1="17.7" y1="6.3" x2="19.8" y2="4.2"></line>
-        </svg>
-        <svg id="moonIcon" viewBox="0 0 24 24" fill="#dbe6ff" style="display:none;">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-        </svg>
-      </button>
-    </div>
-  </div>
-</header>
-
-<!-- ===================== VISTA: REGISTRO ===================== -->
-<section class="view active" id="view-register">
-  <div class="auth-wrap">
-    <div class="auth-card">
-      <h2>Crear cuenta de estudiante</h2>
-      <p class="sub">Regístrate para acceder a tus cursos y actividades.</p>
-
-      <button type="button" class="google-btn" id="googleBtnRegister">
-        <svg viewBox="0 0 48 48" width="20" height="20"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
-        <span>Acceder con Gmail</span>
-      </button>
-
-      <div class="auth-divider"><span>o regístrate con tu correo</span></div>
-
-      <form id="formRegister" novalidate>
-        <div class="field-row-2">
-          <div class="field">
-            <label for="regFirstName">Nombre</label>
-            <input type="text" id="regFirstName" placeholder="Ej. María" autocomplete="given-name" required>
-          </div>
-          <div class="field">
-            <label for="regLastName">Apellido</label>
-            <input type="text" id="regLastName" placeholder="Ej. Pérez" autocomplete="family-name" required>
-          </div>
-        </div>
-        <div class="field">
-          <label for="regEmail">Correo (Gmail)</label>
-          <input type="email" id="regEmail" placeholder="tunombre@gmail.com" autocomplete="email" required>
-        </div>
-        <div class="field">
-          <label for="regPass">Contraseña</label>
-          <div class="pass-wrap">
-            <input type="password" id="regPass" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required minlength="6">
-            <button type="button" class="pass-toggle" data-target="regPass">👁️</button>
-          </div>
-        </div>
-        <div class="field">
-          <label for="regPass2">Confirmar contraseña</label>
-          <div class="pass-wrap">
-            <input type="password" id="regPass2" placeholder="Repite tu contraseña" autocomplete="new-password" required minlength="6">
-            <button type="button" class="pass-toggle" data-target="regPass2">👁️</button>
-          </div>
-        </div>
-
-        <button type="submit" class="btn-primary">Registrarme</button>
-        <div class="form-msg" id="registerMsg"></div>
-
-        <div class="email-preview" id="emailPreview">
-          <div class="email-head">📧 Correo enviado a tu Gmail</div>
-          <p><strong>De:</strong> Academia Ronald Byte &lt;no-responder@ronaldbyte.edu&gt;</p>
-          <p><strong>Para:</strong> <span id="emailTo"></span></p>
-          <p><strong>Asunto:</strong> Confirma tu cuenta</p>
-          <p>Hola <span id="emailName"></span>, gracias por registrarte. Confirma tu cuenta para activar tu acceso:</p>
-          <button class="confirm-btn" id="btnConfirmEmail">Confirmar mi cuenta</button>
-        </div>
-      </form>
-
-      <div class="switch-line">
-        ¿Ya tienes cuenta? <button id="goLogin">Inicia sesión</button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===================== VISTA: LOGIN ===================== -->
-<section class="view" id="view-login">
-  <div class="auth-wrap">
-    <div class="auth-card">
-      <h2>Iniciar sesión</h2>
-      <p class="sub">Ingresa con tu correo y contraseña.</p>
-
-      <button type="button" class="google-btn" id="googleBtnLogin">
-        <svg viewBox="0 0 48 48" width="20" height="20"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
-        <span>Acceder con Gmail</span>
-      </button>
-
-      <div class="auth-divider"><span>o ingresa con tu correo</span></div>
-
-      <form id="formLogin" novalidate>
-        <div class="field">
-          <label for="logEmail">Correo</label>
-          <input type="email" id="logEmail" placeholder="tunombre@gmail.com" autocomplete="email" required>
-        </div>
-        <div class="field">
-          <label for="logPass">Contraseña</label>
-          <div class="pass-wrap">
-            <input type="password" id="logPass" placeholder="Tu contraseña" autocomplete="current-password" required>
-            <button type="button" class="pass-toggle" data-target="logPass">👁️</button>
-          </div>
-        </div>
-        <button type="submit" class="btn-primary">Entrar</button>
-        <div class="form-msg" id="loginMsg"></div>
-      </form>
-
-      <div class="switch-line">
-        ¿No tienes cuenta? <button id="goRegister">Regístrate</button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===================== VISTA: DASHBOARD ESTUDIANTE ===================== -->
-<section class="view" id="view-dashboard">
-  <div class="dash-wrap">
-    <div class="welcome-banner">
-      <h1>Bienvenido, <span id="studentNameDisplay"></span> 👋</h1>
-      <p>Este es tu espacio para ver tus cursos, entregar actividades y gestionar tu cuenta.</p>
-    </div>
-
-    <div class="dash-tabs">
-      <button class="dash-tab active" data-panel="panel-courses">📚 Mis Cursos</button>
-      <button class="dash-tab" data-panel="panel-pending">⏳ Tareas Pendientes <span class="tab-badge" id="pendingBadge" style="display:none;">0</span></button>
-      <button class="dash-tab" data-panel="panel-account">⚙️ Mi Cuenta</button>
-    </div>
-
-    <!-- Panel: lista de cursos -->
-    <div class="panel active" id="panel-courses">
-      <h2 class="section-heading">Cursos asignados</h2>
-      <div class="courses-grid" id="coursesGrid"></div>
-    </div>
-
-    <!-- Panel: tareas pendientes (todas, de todos los cursos) -->
-    <div class="panel" id="panel-pending">
-      <h2 class="section-heading">Tareas pendientes por entregar</h2>
-      <div id="pendingList"></div>
-    </div>
-
-    <!-- Panel: detalle de un curso -->
-    <div class="panel" id="panel-course-detail">
-      <button class="back-courses" id="backToCourses">⬅ Volver a mis cursos</button>
-      <div class="course-detail-head">
-        <h2 id="detailCourseName"></h2>
-        <p id="detailCourseDesc"></p>
-      </div>
-      <div class="task-list" id="taskList"></div>
-    </div>
-
-    <!-- Panel: cuenta -->
-    <div class="panel" id="panel-account">
-      <h2 class="section-heading">Mi Cuenta</h2>
-
-      <div class="account-card profile-card">
-        <h3>Datos personales</h3>
-        <div class="profile-row">
-          <div class="avatar-wrap">
-            <div class="avatar-circle" id="avatarCircle"><span id="avatarInitials">?</span></div>
-            <label class="avatar-edit-btn" for="avatarUpload" title="Cambiar foto de perfil">📷</label>
-            <input type="file" id="avatarUpload" accept="image/*" style="display:none;">
-          </div>
-          <div class="profile-info">
-            <div class="profile-field">
-              <span class="pf-label">Nombre</span>
-              <span class="pf-value" id="profileFirstName">—</span>
-            </div>
-            <div class="profile-field">
-              <span class="pf-label">Apellido</span>
-              <span class="pf-value" id="profileLastName">—</span>
-            </div>
-            <div class="profile-field">
-              <span class="pf-label">Correo</span>
-              <span class="pf-value" id="profileEmail">—</span>
-            </div>
-          </div>
-        </div>
-        <div class="form-msg" id="avatarMsg"></div>
-      </div>
-
-      <div class="account-grid">
-        <div class="account-card" id="changePassCard">
-          <h3>Cambiar contraseña</h3>
-          <form id="formChangePass" novalidate>
-            <div class="field">
-              <label for="curPass">Contraseña actual</label>
-              <div class="pass-wrap">
-                <input type="password" id="curPass" required>
-                <button type="button" class="pass-toggle" data-target="curPass">👁️</button>
-              </div>
-            </div>
-            <div class="field">
-              <label for="newPass">Nueva contraseña</label>
-              <div class="pass-wrap">
-                <input type="password" id="newPass" required minlength="6">
-                <button type="button" class="pass-toggle" data-target="newPass">👁️</button>
-              </div>
-            </div>
-            <button type="submit" class="btn-primary">Actualizar contraseña</button>
-            <div class="form-msg" id="changePassMsg"></div>
-          </form>
-        </div>
-
-        <div class="account-card danger-zone">
-          <h3>Eliminar cuenta</h3>
-          <p>Esta acción es permanente y borrará tu cuenta, tus entregas y tu acceso a la intranet.</p>
-          <button class="btn-danger" id="btnDeleteAccount">Eliminar mi cuenta</button>
-          <div class="form-msg" id="deleteMsg"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<footer class="app-footer">
-  © 2026 Academia Ronald Byte. Intranet del estudiante.
-</footer>
-
-<div class="toast" id="toast"></div>
-
-<script>
-/* =========================================================
-   "BASE DE DATOS" LOCAL
-   Todo se guarda en localStorage del navegador, ya que este
-   proyecto es solo HTML/CSS/JS sin servidor backend.
-   Esta misma base de datos la comparte la intranet del
-   docente (intranet-docente.html), por eso usan las mismas
-   claves de almacenamiento.
-========================================================= */
-
-/* =========================================================
-   "BASE DE DATOS" EN LA NUBE (Firebase Firestore)
-   Todo se guarda en un documento compartido en Firestore, así
-   que el docente y los estudiantes ven los mismos datos sin
-   importar el dispositivo o navegador desde el que entren.
-   Esta misma base de datos la comparte la intranet del
-   docente (intranet-docente.html), por eso usan el mismo
-   documento en Firestore.
-
-   La sesión (quién inició sesión en ESTE navegador) sigue
-   guardada en localStorage, porque es información de este
-   dispositivo, no algo que deba sincronizarse entre todos.
-========================================================= */
-
-const FIRESTORE_DOC_PATH = { collection: 'arb_data', id: 'shared' };
-
-// Caché en memoria: el resto del código sigue leyendo/escribiendo
-// de forma síncrona (igual que antes), pero por debajo se sincroniza
-// con Firestore en tiempo real.
-const cloudCache = {
-  users: [],
-  courses: [],
-  ready: false
-};
-
-let firestoreDocRef = null;
-let onCloudChangeCallback = null;
-let suppressNextSnapshotEcho = false;
-
-function setOnCloudChange(cb){ onCloudChangeCallback = cb; }
-
-async function initCloudSync(){
-  await new Promise(resolve => {
-    if(window.__firebase){ resolve(); return; }
-    window.addEventListener('firebase-ready', () => resolve(), { once:true });
-  });
-
-  const { firestore, doc, getDoc, setDoc, onSnapshot } = window.__firebase;
-  firestoreDocRef = doc(firestore, FIRESTORE_DOC_PATH.collection, FIRESTORE_DOC_PATH.id);
-
-  const snap = await getDoc(firestoreDocRef);
-  if(snap.exists()){
-    const data = snap.data();
-    cloudCache.users = data.users || [];
-    cloudCache.courses = data.courses || [];
-  } else {
-    cloudCache.users = [];
-    cloudCache.courses = [];
-    await setDoc(firestoreDocRef, { users: [], teachers: [], courses: [] });
-  }
-  cloudCache.ready = true;
-
-  onSnapshot(firestoreDocRef, (docSnap) => {
-    if(!docSnap.exists()) return;
-    const data = docSnap.data();
-    cloudCache.users = data.users || [];
-    cloudCache.courses = data.courses || [];
-    if(onCloudChangeCallback) onCloudChangeCallback();
-  });
-}
-
-function pushCloudUpdate(){
-  if(!firestoreDocRef) return;
-  const { updateDoc } = window.__firebase;
-  updateDoc(firestoreDocRef, {
-    users: cloudCache.users,
-    courses: cloudCache.courses
-  }).catch(err => {
-    console.error('No se pudo guardar en la nube:', err);
-    showToast('⚠️ No se pudo guardar el cambio en la nube. Revisa tu conexión.');
-  });
-}
-
-const DB = {
-  KEY_SESSION: 'arb_session',
-
-  getUsers(){ return cloudCache.users; },
-  saveUsers(u){ cloudCache.users = u; pushCloudUpdate(); },
-
-  getCourses(){ return cloudCache.courses; },
-  saveCourses(c){ cloudCache.courses = c; pushCloudUpdate(); },
-
-  // Migración: limpia los cursos de ejemplo que quedaron guardados de
-  // versiones anteriores (c1/c2/c3 con esos nombres exactos), para que
-  // la intranet quede realmente vacía hasta que el docente cree algo.
-  cleanupLegacySampleCourses(){
-    const FLAG = 'arb_legacy_samples_cleaned_v1';
-    if(localStorage.getItem(FLAG)) return;
-    const courses = this.getCourses();
-    const sampleIds = new Set(['c1','c2','c3']);
-    const sampleNames = new Set([
-      'Fundamentos de Computación',
-      'Algoritmos y Programación',
-      'Redes de Computadoras'
-    ]);
-    const filtered = courses.filter(c => !(sampleIds.has(c.id) && sampleNames.has(c.name) && (!c.tasks || !c.tasks.some(t => t.submissions && t.submissions.length > 0))));
-    if(filtered.length !== courses.length){
-      this.saveCourses(filtered);
-    }
-    localStorage.setItem(FLAG, '1');
-  },
-
-  getSession(){ return JSON.parse(localStorage.getItem(this.KEY_SESSION) || 'null'); },
-  setSession(email){ localStorage.setItem(this.KEY_SESSION, JSON.stringify({email})); },
-  clearSession(){ localStorage.removeItem(this.KEY_SESSION); }
-};
-
-const EDIT_WINDOW_MS = 1000 * 60 * 10; // 10 minutos para editar tras enviar
-
-function seedCourses(){
-  // Sin cursos de ejemplo: la intranet empieza vacía y solo se llena
-  // cuando el docente crea cursos/actividades reales desde su panel.
-  return [];
-}
-
-/* =========================================================
-   UTILIDADES
-========================================================= */
-
-function showToast(msg, type){
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (type ? ' '+type : '');
-  clearTimeout(window.__toastTimer);
-  window.__toastTimer = setTimeout(()=> t.classList.remove('show'), 4200);
-}
-
-function showView(id){
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-function showMsg(elId, text, type){
-  const el = document.getElementById(elId);
-  el.textContent = text;
-  el.className = 'form-msg show ' + type;
-}
-
-function clearMsg(elId){
-  const el = document.getElementById(elId);
-  el.className = 'form-msg';
-  el.textContent = '';
-}
-
-function isValidGmail(email){
-  return /^[^\s@]+@gmail\.com$/i.test(email.trim());
-}
-
-function formatCountdown(ms){
-  if(ms <= 0) return null;
-  const totalSeconds = Math.floor(ms/1000);
-  const days = Math.floor(totalSeconds / 86400);
-  const hours = Math.floor((totalSeconds % 86400) / 3600);
-  const mins = Math.floor((totalSeconds % 3600) / 60);
-  const secs = totalSeconds % 60;
-  if(days > 0) return `${days}d ${hours}h ${mins}m`;
-  if(hours > 0) return `${hours}h ${mins}m ${secs}s`;
-  return `${mins}m ${secs}s`;
-}
-
-function escapeHtml(str){
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-function findMySubmission(task, email){
-  return (task.submissions || []).find(s => s.studentEmail === email) || null;
-}
-
-/* =========================================================
-   TEMA CLARO / OSCURO
-========================================================= */
-const themeToggle = document.getElementById('themeToggle');
-const sunIcon = document.getElementById('sunIcon');
-const moonIcon = document.getElementById('moonIcon');
-const root = document.documentElement;
-
-function setTheme(theme){
-  if(theme === 'dark'){
-    root.setAttribute('data-theme','dark');
-    sunIcon.style.display='none';
-    moonIcon.style.display='block';
-  } else {
-    root.removeAttribute('data-theme');
-    sunIcon.style.display='block';
-    moonIcon.style.display='none';
-  }
-}
-setTheme('light');
-themeToggle.addEventListener('click', () => {
-  const isDark = root.getAttribute('data-theme') === 'dark';
-  setTheme(isDark ? 'light' : 'dark');
-});
-
-/* =========================================================
-   MOSTRAR / OCULTAR CONTRASEÑA
-========================================================= */
-document.querySelectorAll('.pass-toggle').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const input = document.getElementById(btn.dataset.target);
-    if(input.type === 'password'){
-      input.type = 'text';
-      btn.textContent = '🙈';
-    } else {
-      input.type = 'password';
-      btn.textContent = '👁️';
-    }
-  });
-});
-
-/* =========================================================
-   NAVEGACIÓN ENTRE VISTAS DE AUTENTICACIÓN
-========================================================= */
-document.getElementById('goLogin').addEventListener('click', () => {
-  clearMsg('loginMsg');
-  showView('view-login');
-});
-document.getElementById('goRegister').addEventListener('click', () => {
-  clearMsg('registerMsg');
-  document.getElementById('emailPreview').classList.remove('show');
-  showView('view-register');
-});
-
-/* =========================================================
-   REGISTRO DE ESTUDIANTE + "CORREO" DE CONFIRMACIÓN SIMULADO
-========================================================= */
-let pendingConfirmation = null;
-
-document.getElementById('formRegister').addEventListener('submit', (e) => {
-  e.preventDefault();
-  clearMsg('registerMsg');
-
-  const firstName = document.getElementById('regFirstName').value.trim();
-  const lastName = document.getElementById('regLastName').value.trim();
-  const email = document.getElementById('regEmail').value.trim().toLowerCase();
-  const pass = document.getElementById('regPass').value;
-  const pass2 = document.getElementById('regPass2').value;
-
-  if(!firstName || !lastName || !email || !pass || !pass2){
-    showMsg('registerMsg', 'Completa todos los campos.', 'error');
-    return;
-  }
-  if(!isValidGmail(email)){
-    showMsg('registerMsg', 'Usa un correo de Gmail válido (ejemplo@gmail.com).', 'error');
-    return;
-  }
-  if(pass.length < 6){
-    showMsg('registerMsg', 'La contraseña debe tener al menos 6 caracteres.', 'error');
-    return;
-  }
-  if(pass !== pass2){
-    showMsg('registerMsg', 'Las contraseñas no coinciden.', 'error');
-    return;
+  :root{
+    --blue-1:#1e90ff;
+    --blue-2:#2563eb;
+    --blue-3:#3b82f6;
+    --turquoise:#14e0c4;
+    --green-accent:#22c55e;
+    --orange-accent:#fbbf24;
+    --orange-deep:#f59e0b;
+    --purple-accent:#7c3aed;
+    --red-accent:#ef4444;
+
+    --bg:#f5f8ff;
+    --bg-soft:#ffffff;
+    --text:#1c2433;
+    --text-soft:#54607a;
+    --card-bg:#ffffff;
+    --card-shadow:0 10px 30px rgba(30,60,120,0.12);
+    --border-soft:rgba(30,60,120,0.08);
+    --header-text:#16213a;
+    --input-bg:#f1f5fb;
   }
 
-  const users = DB.getUsers();
-  if(users.find(u => u.email === email)){
-    showMsg('registerMsg', 'Ya existe una cuenta registrada con ese correo.', 'error');
-    return;
+  [data-theme="dark"]{
+    --bg:#0b1020;
+    --bg-soft:#121830;
+    --text:#eaf0ff;
+    --text-soft:#a7b3cf;
+    --card-bg:#171f3a;
+    --card-shadow:0 10px 30px rgba(0,0,0,0.5);
+    --border-soft:rgba(255,255,255,0.08);
+    --header-text:#eaf6ff;
+    --input-bg:#0e1530;
   }
 
-  const name = `${firstName} ${lastName}`.trim();
-  const newUser = { name, firstName, lastName, email, password: pass, confirmed:false, photo:null, createdAt: Date.now() };
-  users.push(newUser);
-  DB.saveUsers(users);
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
 
-  pendingConfirmation = email;
-
-  document.getElementById('emailTo').textContent = email;
-  document.getElementById('emailName').textContent = name;
-  document.getElementById('emailPreview').classList.add('show');
-
-  showMsg('registerMsg', 'Cuenta creada. Revisa el correo simulado abajo para confirmarla.', 'success');
-});
-
-document.getElementById('btnConfirmEmail').addEventListener('click', () => {
-  if(!pendingConfirmation) return;
-  const users = DB.getUsers();
-  const u = users.find(x => x.email === pendingConfirmation);
-  if(u){
-    u.confirmed = true;
-    DB.saveUsers(users);
-  }
-  document.getElementById('emailPreview').classList.remove('show');
-  showMsg('registerMsg', '¡Cuenta confirmada! Ya puedes iniciar sesión.', 'success');
-  pendingConfirmation = null;
-  setTimeout(() => showView('view-login'), 1400);
-});
-
-/* =========================================================
-   LOGIN
-========================================================= */
-document.getElementById('formLogin').addEventListener('submit', (e) => {
-  e.preventDefault();
-  clearMsg('loginMsg');
-
-  const email = document.getElementById('logEmail').value.trim().toLowerCase();
-  const pass = document.getElementById('logPass').value;
-
-  const users = DB.getUsers();
-  const user = users.find(u => u.email === email);
-
-  if(!user){
-    showMsg('loginMsg', 'No existe una cuenta con ese correo.', 'error');
-    return;
-  }
-  if(user.authProvider === 'google'){
-    showMsg('loginMsg', 'Esta cuenta se creó con Gmail. Usa el botón "Acceder con Gmail" arriba.', 'error');
-    return;
-  }
-  if(!user.confirmed){
-    showMsg('loginMsg', 'Debes confirmar tu cuenta desde el correo antes de iniciar sesión.', 'error');
-    return;
-  }
-  if(user.password !== pass){
-    showMsg('loginMsg', 'Contraseña incorrecta.', 'error');
-    return;
+  body{
+    font-family:'Inter', sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    transition:background .4s ease, color .4s ease;
+    min-height:100vh;
   }
 
-  DB.setSession(email);
-  enterDashboard(user);
-});
+  h1,h2,h3,.brand{font-family:'Poppins', sans-serif;}
+  a{color:inherit;}
 
-/* =========================================================
-   ACCEDER CON GMAIL (Google Sign-In real vía Firebase Auth)
-========================================================= */
-async function handleGoogleSignIn(msgElId){
-  if(!window.__firebase || !window.__firebase.auth){
-    showMsg(msgElId, 'La conexión con Google aún no está lista. Intenta de nuevo en un segundo.', 'error');
-    return;
+  /* ===== TOPBAR ===== */
+  header.topbar{
+    background:linear-gradient(120deg, var(--blue-1), var(--turquoise), var(--blue-2), var(--blue-1));
+    background-size:300% 300%;
+    animation:gradientMove 10s ease infinite;
+    box-shadow:0 4px 20px rgba(0,0,0,0.18);
+    position:sticky;
+    top:0;
+    z-index:1000;
   }
 
-  const { auth, googleProvider, signInWithPopup } = window.__firebase;
-
-  try{
-    const result = await signInWithPopup(auth, googleProvider);
-    const gUser = result.user;
-    const email = (gUser.email || '').trim().toLowerCase();
-
-    if(!email){
-      showMsg(msgElId, 'No se pudo obtener tu correo de Google.', 'error');
-      return;
-    }
-
-    const users = DB.getUsers();
-    let user = users.find(u => u.email === email);
-
-    if(user){
-      // Ya existía la cuenta (manual o de Google): solo iniciamos sesión.
-      if(!user.confirmed) user.confirmed = true; // entrar con Google confirma la cuenta automáticamente
-      if(!user.photo && gUser.photoURL) user.photo = gUser.photoURL;
-      DB.saveUsers(users);
-    } else {
-      // Primera vez con esta cuenta de Google: la creamos ya confirmada.
-      const fullName = gUser.displayName || email.split('@')[0];
-      const parts = fullName.trim().split(' ');
-      const firstName = parts[0] || fullName;
-      const lastName = parts.slice(1).join(' ') || '';
-
-      user = {
-        name: fullName,
-        firstName, lastName,
-        email,
-        password: null,
-        authProvider: 'google',
-        confirmed: true,
-        photo: gUser.photoURL || null,
-        createdAt: Date.now()
-      };
-      users.push(user);
-      DB.saveUsers(users);
-    }
-
-    DB.setSession(email);
-    enterDashboard(user);
-  } catch(err){
-    console.error('Error con Google Sign-In:', err);
-    if(err.code === 'auth/popup-closed-by-user'){
-      showMsg(msgElId, 'Cerraste la ventana de Google antes de terminar.', 'error');
-    } else {
-      showMsg(msgElId, 'No se pudo acceder con Gmail. Intenta de nuevo.', 'error');
-    }
-  }
-}
-
-document.getElementById('googleBtnRegister').addEventListener('click', () => {
-  clearMsg('registerMsg');
-  handleGoogleSignIn('registerMsg');
-});
-document.getElementById('googleBtnLogin').addEventListener('click', () => {
-  clearMsg('loginMsg');
-  handleGoogleSignIn('loginMsg');
-});
-
-/* =========================================================
-   ENTRAR AL DASHBOARD
-========================================================= */
-let masterInterval = null;
-
-function enterDashboard(user){
-  document.getElementById('studentNameDisplay').textContent = user.name;
-  document.getElementById('navLogout').style.display = 'inline-block';
-  document.getElementById('navBackHome').textContent = '⬅ Inicio';
-  showView('view-dashboard');
-  document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
-  document.querySelector('.dash-tab[data-panel="panel-courses"]').classList.add('active');
-  switchPanel('panel-courses');
-  refreshAll();
-  renderProfile(user);
-
-  clearInterval(masterInterval);
-  masterInterval = setInterval(refreshTimers, 1000);
-}
-
-function currentUser(){
-  const session = DB.getSession();
-  if(!session) return null;
-  const users = DB.getUsers();
-  return users.find(u => u.email === session.email) || null;
-}
-
-function refreshAll(){
-  renderCourses();
-  renderPendingTab();
-  if(activeCourseId){
-    const course = DB.getCourses().find(c => c.id === activeCourseId);
-    if(course) renderTasks(course);
-  }
-}
-
-function refreshTimers(){
-  // Solo refresca los contadores visibles sin re-renderizar todo
-  if(document.getElementById('panel-course-detail').classList.contains('active') && activeCourseId){
-    const course = DB.getCourses().find(c => c.id === activeCourseId);
-    if(course) updateCountdownsAndEditWindows(course);
-  }
-  if(document.getElementById('panel-pending').classList.contains('active')){
-    renderPendingTab();
-  }
-}
-
-/* =========================================================
-   TABS DEL DASHBOARD
-========================================================= */
-document.querySelectorAll('.dash-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    switchPanel(tab.dataset.panel);
-    if(tab.dataset.panel === 'panel-pending') renderPendingTab();
-  });
-});
-
-function switchPanel(panelId){
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById(panelId).classList.add('active');
-}
-
-/* =========================================================
-   RENDER CURSOS (el estudiante NO puede eliminar cursos,
-   y solo ve los que el docente no haya archivado)
-========================================================= */
-function renderCourses(){
-  const grid = document.getElementById('coursesGrid');
-  const user = currentUser();
-  if(!user) return;
-  const courses = DB.getCourses().filter(c => !c.archived);
-
-  if(courses.length === 0){
-    grid.innerHTML = `<div class="empty-state"><span class="e-icon">📭</span>Aún no hay un curso asignado.</div>`;
-    return;
+  @keyframes gradientMove{
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
   }
 
-  grid.innerHTML = courses.map(c => {
-    const visibleTasks = c.tasks.filter(t => !t.archived);
-    const pendingCount = visibleTasks.filter(t => !findMySubmission(t, user.email)).length;
-    return `
-      <div class="course-card" data-course="${c.id}">
-        <span class="c-icon">${c.icon}</span>
-        <h3>${escapeHtml(c.name)}</h3>
-        <p>${escapeHtml(c.desc)}</p>
-        <div class="c-meta">
-          <span>${visibleTasks.length} actividad(es)</span>
-          ${pendingCount > 0 ? `<span class="pending-badge">${pendingCount} pendiente(s)</span>` : '<span>✅ Al día</span>'}
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  grid.querySelectorAll('.course-card').forEach(card => {
-    card.addEventListener('click', () => openCourse(card.dataset.course));
-  });
-
-  updatePendingBadgeCount();
-}
-
-function updatePendingBadgeCount(){
-  const user = currentUser();
-  if(!user) return;
-  const courses = DB.getCourses().filter(c => !c.archived);
-  let count = 0;
-  courses.forEach(c => {
-    c.tasks.filter(t => !t.archived).forEach(t => {
-      if(!findMySubmission(t, user.email)) count++;
-    });
-  });
-  const badge = document.getElementById('pendingBadge');
-  if(count > 0){
-    badge.style.display = 'flex';
-    badge.textContent = count;
-  } else {
-    badge.style.display = 'none';
-  }
-}
-
-/* =========================================================
-   TAB: TAREAS PENDIENTES (vista global de todos los cursos)
-========================================================= */
-function renderPendingTab(){
-  const list = document.getElementById('pendingList');
-  const user = currentUser();
-  if(!user) return;
-  const courses = DB.getCourses().filter(c => !c.archived);
-
-  let rows = [];
-  courses.forEach(c => {
-    c.tasks.filter(t => !t.archived).forEach(t => {
-      const mySub = findMySubmission(t, user.email);
-      if(!mySub){
-        rows.push({ course:c, task:t });
-      }
-    });
-  });
-
-  if(rows.length === 0){
-    if(courses.length === 0){
-      list.innerHTML = `<div class="empty-state"><span class="e-icon">📭</span>Aún no hay un curso asignado.</div>`;
-    } else {
-      list.innerHTML = `<div class="empty-state"><span class="e-icon">🎉</span>No tienes tareas pendientes. ¡Estás al día!</div>`;
-    }
-    return;
+  .topbar-inner{
+    max-width:1300px;
+    margin:0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 24px;
+    height:68px;
   }
 
-  list.innerHTML = rows.map(r => {
-    const remaining = r.task.due - Date.now();
-    const overdue = remaining <= 0;
-    const txt = overdue ? '⏰ Vencido' : `⏳ ${formatCountdown(remaining)} restantes`;
-    return `
-      <div class="pending-task-row" data-course="${r.course.id}">
-        <div class="ptr-left">
-          <span class="ptr-course">${r.course.icon} ${escapeHtml(r.course.name)}</span>
-          <h4>${escapeHtml(r.task.title)}</h4>
-        </div>
-        <span class="task-status ${overdue ? 'status-late' : 'status-pending'}">${txt}</span>
-      </div>
-    `;
-  }).join('');
-
-  list.querySelectorAll('.pending-task-row').forEach(row => {
-    row.addEventListener('click', () => openCourse(row.dataset.course));
-  });
-}
-
-/* =========================================================
-   DETALLE DE CURSO + TAREAS + CRONÓMETRO + SUBIDA DE ARCHIVO
-   + VENTANA DE EDICIÓN + REVISIÓN DEL DOCENTE
-========================================================= */
-let activeCourseId = null;
-
-function openCourse(courseId){
-  activeCourseId = courseId;
-  const courses = DB.getCourses();
-  const course = courses.find(c => c.id === courseId);
-  if(!course) return;
-
-  document.getElementById('detailCourseName').textContent = `${course.icon} ${course.name}`;
-  document.getElementById('detailCourseDesc').textContent = course.desc;
-
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-course-detail').classList.add('active');
-  document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
-
-  renderTasks(course);
-}
-
-document.getElementById('backToCourses').addEventListener('click', () => {
-  activeCourseId = null;
-  document.querySelector('.dash-tab[data-panel="panel-courses"]').classList.add('active');
-  switchPanel('panel-courses');
-  refreshAll();
-});
-
-function renderTasks(course){
-  const list = document.getElementById('taskList');
-  const user = currentUser();
-  if(!user) return;
-
-  const visibleTasks = course.tasks.filter(t => !t.archived);
-
-  if(visibleTasks.length === 0){
-    list.innerHTML = `<div class="empty-state"><span class="e-icon">🗒️</span>Este curso aún no tiene actividades asignadas.</div>`;
-    return;
+  .brand-area{
+    display:flex;align-items:center;gap:10px;
+    font-weight:800;color:var(--header-text);
+    font-size:1.02rem;
+    text-decoration:none;
   }
 
-  list.innerHTML = visibleTasks.map(t => {
-    const sub = findMySubmission(t, user.email);
-    const submitted = !!sub;
-    const overdue = !submitted && (t.due - Date.now()) <= 0;
-    const hasReview = submitted && sub.review;
-    const unseenReview = hasReview && sub.review.seenByStudent === false;
-
-    let statusClass = 'status-pending';
-    let statusText = 'Pendiente';
-    if(submitted){
-      statusClass = hasReview ? 'status-reviewed' : 'status-submitted';
-      statusText = hasReview ? 'Revisado' : 'Entregado';
-    } else if(overdue){
-      statusClass = 'status-late';
-      statusText = 'Vencido';
-    }
-
-    let cardClasses = 'task-card';
-    if(hasReview) cardClasses += ' has-review';
-    if(unseenReview) cardClasses += ' has-unseen-review';
-
-    let editWindowHtml = '';
-    let canEdit = false;
-    if(submitted && !hasReview){
-      const editDeadline = sub.sentAt + EDIT_WINDOW_MS;
-      const remainingEdit = editDeadline - Date.now();
-      if(remainingEdit > 0){
-        canEdit = true;
-        editWindowHtml = `
-          <div class="edit-window-box" id="ewbox-${t.id}">
-            <span class="ew-text">¿Olvidaste algo? Puedes editar tu envío por <strong id="ewtime-${t.id}">${formatCountdown(remainingEdit)}</strong> más.</span>
-            <button class="edit-btn" data-edit-task="${t.id}">✏️ Editar envío</button>
-          </div>
-        `;
-      }
-    }
-
-    let reviewHtml = '';
-    if(hasReview){
-      reviewHtml = `
-        <div class="review-box">
-          <div class="rb-head">🧑‍🏫 Revisión del docente ${unseenReview ? '<span class="new-dot"></span>' : ''}</div>
-          ${sub.review.grade ? `<span class="rb-grade">Nota: ${escapeHtml(sub.review.grade)}</span>` : ''}
-          <p>${escapeHtml(sub.review.comment || 'El docente marcó tu trabajo como revisado.')}</p>
-          <div class="rb-time">Revisado el ${new Date(sub.review.reviewedAt).toLocaleString('es-PE')}</div>
-        </div>
-      `;
-    }
-
-    let materialsHtml = '';
-    if(t.materials && t.materials.length > 0){
-      materialsHtml = `
-        <div class="materials-mini">
-          ${t.materials.map((m, idx) => `
-            <span class="material-chip">
-              📎 ${escapeHtml(m.name)}
-              ${m.data ? `<button type="button" class="material-download-btn" data-material-task="${t.id}" data-material-index="${idx}">⬇️ Descargar</button>` : ''}
-            </span>
-          `).join('')}
-        </div>
-      `;
-    }
-
-    return `
-      <div class="${cardClasses}" data-task="${t.id}">
-        <div class="task-top">
-          <h4>${escapeHtml(t.title)} ${unseenReview ? '<span class="new-dot"></span>' : ''}</h4>
-          <span class="task-status ${statusClass}">${statusText}</span>
-        </div>
-        <p class="desc">${escapeHtml(t.desc)}</p>
-        ${materialsHtml}
-        ${!submitted ? `<div class="countdown" data-due="${t.due}" id="cd-${t.id}"></div>` : ''}
-        ${submitted ? `
-          <div class="submitted-info" id="subinfo-${t.id}">✅ Enviado: ${escapeHtml(sub.fileName)} — ${new Date(sub.sentAt).toLocaleString('es-PE')}</div>
-          ${editWindowHtml}
-        ` : `
-          <div class="upload-row">
-            <label class="file-label" for="file-${t.id}">📎 Elegir archivo</label>
-            <input type="file" id="file-${t.id}" style="display:none;">
-            <span class="file-chosen" id="chosen-${t.id}">Ningún archivo seleccionado</span>
-            <button class="send-btn" id="send-${t.id}" disabled>Enviar trabajo</button>
-          </div>
-        `}
-        ${reviewHtml}
-      </div>
-    `;
-  }).join('');
-
-  // Marcar como vistas las revisiones nuevas (tras pequeño delay para que el usuario note el destello)
-  setTimeout(() => {
-    const courses = DB.getCourses();
-    const c = courses.find(cc => cc.id === activeCourseId);
-    if(!c) return;
-    let changed = false;
-    c.tasks.forEach(t => {
-      const s = findMySubmission(t, user.email);
-      if(s && s.review && s.review.seenByStudent === false){
-        s.review.seenByStudent = true;
-        changed = true;
-      }
-    });
-    if(changed) DB.saveCourses(courses);
-  }, 2200);
-
-  // Listeners de subida de archivo por tarea (solo las no entregadas)
-  visibleTasks.forEach(t => {
-    const sub = findMySubmission(t, user.email);
-    if(sub) return;
-
-    const fileInput = document.getElementById(`file-${t.id}`);
-    const chosenLabel = document.getElementById(`chosen-${t.id}`);
-    const sendBtn = document.getElementById(`send-${t.id}`);
-
-    fileInput.addEventListener('change', () => {
-      if(fileInput.files.length > 0){
-        chosenLabel.textContent = fileInput.files[0].name;
-        sendBtn.disabled = false;
-      } else {
-        chosenLabel.textContent = 'Ningún archivo seleccionado';
-        sendBtn.disabled = true;
-      }
-    });
-
-    sendBtn.addEventListener('click', () => {
-      if(fileInput.files.length === 0) return;
-      readFileAsDataURL(fileInput.files[0], (dataUrl, file) => {
-        submitTask(t.id, file.name, file.type, dataUrl);
-      });
-    });
-  });
-
-  // Listeners de edición de envío
-  list.querySelectorAll('[data-edit-task]').forEach(btn => {
-    btn.addEventListener('click', () => openEditSubmission(btn.dataset.editTask));
-  });
-
-  // Listeners de descarga de material de apoyo subido por el docente
-  list.querySelectorAll('.material-download-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const taskId = btn.dataset.materialTask;
-      const idx = parseInt(btn.dataset.materialIndex, 10);
-      const t2 = course.tasks.find(tt => tt.id === taskId);
-      if(!t2 || !t2.materials || !t2.materials[idx]) return;
-      const material = t2.materials[idx];
-      if(!material.data){
-        showToast('Este material no tiene contenido descargable.');
-        return;
-      }
-      const link = document.createElement('a');
-      link.href = material.data;
-      link.download = material.name || 'material';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
-  });
-
-  updateCountdownsAndEditWindows(course);
-}
-
-const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB por archivo, límite razonable para localStorage
-
-function readFileAsDataURL(file, callback){
-  if(file.size > MAX_FILE_SIZE){
-    showToast('⚠️ El archivo es muy grande (máx. 4MB). Elige uno más pequeño.');
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = () => callback(reader.result, file);
-  reader.onerror = () => showToast('No se pudo leer el archivo. Intenta de nuevo.');
-  reader.readAsDataURL(file);
-}
-
-function submitTask(taskId, fileName, fileType, fileData){
-  const user = currentUser();
-  const courses = DB.getCourses();
-  const c = courses.find(cc => cc.id === activeCourseId);
-  const task = c.tasks.find(tt => tt.id === taskId);
-
-  if(!task.submissions) task.submissions = [];
-  task.submissions.push({
-    studentEmail: user.email,
-    studentName: user.name,
-    fileName,
-    fileType: fileType || '',
-    fileData: fileData || '',
-    sentAt: Date.now(),
-    review: null
-  });
-  DB.saveCourses(courses);
-
-  showToast('✅ Tu trabajo se envió satisfactoriamente.');
-  renderTasks(c);
-}
-
-function openEditSubmission(taskId){
-  const courses = DB.getCourses();
-  const c = courses.find(cc => cc.id === activeCourseId);
-  const task = c.tasks.find(tt => tt.id === taskId);
-  const user = currentUser();
-  const sub = findMySubmission(task, user.email);
-  if(!sub) return;
-
-  const editDeadline = sub.sentAt + EDIT_WINDOW_MS;
-  if(Date.now() > editDeadline){
-    showToast('El tiempo para editar tu envío ya terminó.');
-    renderTasks(c);
-    return;
+  .brand-area .badge{
+    width:36px;height:36px;border-radius:50%;
+    background:rgba(255,255,255,0.25);
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.05rem;
   }
 
-  // Reemplazamos el input de archivo de forma simple: pedimos un nuevo archivo
-  const tempInput = document.createElement('input');
-  tempInput.type = 'file';
-  tempInput.addEventListener('change', () => {
-    if(tempInput.files.length === 0) return;
-    readFileAsDataURL(tempInput.files[0], (dataUrl, file) => {
-      sub.fileName = file.name;
-      sub.fileType = file.type || '';
-      sub.fileData = dataUrl;
-      sub.sentAt = Date.now(); // reinicia ventana de edición desde el nuevo envío
-      DB.saveCourses(courses);
-      showToast('✅ Tu envío fue actualizado correctamente.');
-      renderTasks(c);
-    });
-  });
-  tempInput.click();
-}
+  .topbar-right{display:flex;align-items:center;gap:12px;}
 
-function updateCountdownsAndEditWindows(course){
-  const user = currentUser();
-  if(!user) return;
+  .theme-toggle{
+    width:44px;height:44px;
+    border-radius:50%;
+    border:2px solid rgba(255,255,255,0.4);
+    background:rgba(255,255,255,0.18);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    transition:transform .3s ease, background .3s ease;
+    flex-shrink:0;
+  }
+  .theme-toggle:hover{transform:scale(1.08) rotate(15deg); background:rgba(255,255,255,0.32);}
+  .theme-toggle svg{width:20px;height:20px;}
 
-  course.tasks.filter(t => !t.archived).forEach(t => {
-    const sub = findMySubmission(t, user.email);
+  .back-link{
+    color:var(--header-text);
+    text-decoration:none;
+    font-weight:700;
+    font-size:0.9rem;
+    padding:9px 14px;
+    border-radius:20px;
+    transition:background .2s ease;
+    white-space:nowrap;
+  }
+  .back-link:hover{background:rgba(255,255,255,0.2);}
 
-    if(!sub){
-      const el = document.getElementById(`cd-${t.id}`);
-      if(!el) return;
-      const remaining = t.due - Date.now();
-      const txt = formatCountdown(remaining);
-      if(txt === null){
-        el.textContent = '⏰ Tiempo de entrega vencido';
-        el.classList.add('urgent');
-        const card = el.closest('.task-card');
-        const statusEl = card ? card.querySelector('.task-status') : null;
-        if(statusEl){ statusEl.textContent = 'Vencido'; statusEl.className = 'task-status status-late'; }
-      } else {
-        el.textContent = `⏳ Tiempo restante: ${txt}`;
-        el.classList.toggle('urgent', remaining < 1000*60*60*3);
-      }
-      return;
-    }
+  .logout-btn{
+    background:rgba(0,0,0,0.18);
+    color:#fff;
+    border:none;
+    padding:9px 16px;
+    border-radius:20px;
+    font-weight:700;
+    font-size:0.85rem;
+    cursor:pointer;
+    transition:background .2s ease;
+  }
+  .logout-btn:hover{background:rgba(0,0,0,0.3);}
 
-    if(sub.review) return; // ya revisado, no hay ventana de edición
+  /* ===== LAYOUT ===== */
+  .view{display:none;}
+  .view.active{display:block;}
 
-    const ewtimeEl = document.getElementById(`ewtime-${t.id}`);
-    if(!ewtimeEl) return;
-    const editDeadline = sub.sentAt + EDIT_WINDOW_MS;
-    const remainingEdit = editDeadline - Date.now();
-    if(remainingEdit <= 0){
-      const box = document.getElementById(`ewbox-${t.id}`);
-      if(box) box.remove();
-    } else {
-      ewtimeEl.textContent = formatCountdown(remainingEdit);
-    }
-  });
-}
-
-/* =========================================================
-   DATOS PERSONALES + FOTO DE PERFIL
-========================================================= */
-const MAX_AVATAR_SIZE = 2 * 1024 * 1024; // 2MB es de sobra para una foto de perfil
-
-function getInitials(user){
-  const first = (user.firstName || user.name || '').trim();
-  const last = (user.lastName || '').trim();
-  const a = first.charAt(0).toUpperCase();
-  const b = last.charAt(0).toUpperCase();
-  return (a + b) || '?';
-}
-
-function renderProfile(user){
-  document.getElementById('profileFirstName').textContent = user.firstName || user.name || '—';
-  document.getElementById('profileLastName').textContent = user.lastName || '—';
-  document.getElementById('profileEmail').textContent = user.email || '—';
-
-  const circle = document.getElementById('avatarCircle');
-  if(user.photo){
-    circle.innerHTML = `<img src="${user.photo}" alt="Foto de perfil">`;
-  } else {
-    circle.innerHTML = `<span id="avatarInitials">${getInitials(user)}</span>`;
+  .auth-wrap{
+    max-width:440px;
+    margin:60px auto;
+    padding:0 20px;
   }
 
-  const changePassCard = document.getElementById('changePassCard');
-  if(changePassCard){
-    changePassCard.style.display = (user.authProvider === 'google') ? 'none' : '';
-  }
-}
-
-document.getElementById('avatarUpload').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if(!file) return;
-
-  if(!file.type.startsWith('image/')){
-    showMsg('avatarMsg', 'Elige un archivo de imagen válido.', 'error');
-    return;
-  }
-  if(file.size > MAX_AVATAR_SIZE){
-    showMsg('avatarMsg', 'La imagen es muy grande (máx. 2MB).', 'error');
-    return;
+  .auth-card{
+    background:var(--card-bg);
+    border:1px solid var(--border-soft);
+    border-radius:20px;
+    padding:38px 32px;
+    box-shadow:var(--card-shadow);
   }
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    const user = currentUser();
-    if(!user) return;
-    const users = DB.getUsers();
-    const u = users.find(x => x.email === user.email);
-    u.photo = reader.result;
-    DB.saveUsers(users);
+  .auth-card h2{
+    font-size:1.5rem;
+    margin-bottom:6px;
+    color:var(--purple-accent);
+  }
+  [data-theme="dark"] .auth-card h2{color:#c4a4ff;}
 
-    renderProfile(u);
-    showMsg('avatarMsg', 'Foto de perfil actualizada.', 'success');
-  };
-  reader.onerror = () => showMsg('avatarMsg', 'No se pudo leer la imagen. Intenta de nuevo.', 'error');
-  reader.readAsDataURL(file);
-});
-
-/* =========================================================
-   CAMBIAR CONTRASEÑA
-========================================================= */
-document.getElementById('formChangePass').addEventListener('submit', (e) => {
-  e.preventDefault();
-  clearMsg('changePassMsg');
-
-  const user = currentUser();
-  if(!user) return;
-
-  if(user.authProvider === 'google'){
-    showMsg('changePassMsg', 'Tu cuenta usa Gmail para acceder, así que no tiene una contraseña propia que cambiar.', 'error');
-    return;
+  .auth-card .sub{
+    color:var(--text-soft);
+    font-size:0.9rem;
+    margin-bottom:24px;
   }
 
-  const cur = document.getElementById('curPass').value;
-  const next = document.getElementById('newPass').value;
+  .field{margin-bottom:18px;}
+  .field-row-2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
 
-  if(user.password !== cur){
-    showMsg('changePassMsg', 'La contraseña actual no es correcta.', 'error');
-    return;
-  }
-  if(next.length < 6){
-    showMsg('changePassMsg', 'La nueva contraseña debe tener al menos 6 caracteres.', 'error');
-    return;
-  }
-
-  const users = DB.getUsers();
-  const u = users.find(x => x.email === user.email);
-  u.password = next;
-  DB.saveUsers(users);
-
-  showMsg('changePassMsg', 'Contraseña actualizada correctamente.', 'success');
-  document.getElementById('formChangePass').reset();
-});
-
-/* =========================================================
-   ELIMINAR CUENTA
-========================================================= */
-document.getElementById('btnDeleteAccount').addEventListener('click', () => {
-  const user = currentUser();
-  if(!user) return;
-
-  const sure = confirm('¿Seguro que quieres eliminar tu cuenta? Esta acción no se puede deshacer.');
-  if(!sure) return;
-
-  let users = DB.getUsers();
-  users = users.filter(u => u.email !== user.email);
-  DB.saveUsers(users);
-  DB.clearSession();
-
-  showToast('Tu cuenta fue eliminada.');
-  setTimeout(() => {
-    clearInterval(masterInterval);
-    document.getElementById('navLogout').style.display = 'none';
-    showView('view-login');
-  }, 900);
-});
-
-/* =========================================================
-   CERRAR SESIÓN
-========================================================= */
-document.getElementById('navLogout').addEventListener('click', () => {
-  DB.clearSession();
-  clearInterval(masterInterval);
-  document.getElementById('navLogout').style.display = 'none';
-  showView('view-login');
-});
-
-/* =========================================================
-   INICIO: conectar a la nube, luego revisar sesión activa
-========================================================= */
-async function startApp(){
-  setOnCloudChange(() => {
-    // Llega un cambio desde otro dispositivo (docente u otro estudiante).
-    // Refrescamos solo lo que está visible para no interrumpir al usuario.
-    const user = currentUser();
-    if(!user) return; // si ya no existe (p.ej. su cuenta fue eliminada), lo maneja currentUser/otros flujos
-
-    if(document.getElementById('view-dashboard').classList.contains('active')){
-      refreshAll();
-      if(document.getElementById('panel-course-detail').classList.contains('active') && activeCourseId){
-        const course = DB.getCourses().find(c => c.id === activeCourseId);
-        if(course) renderTasks(course);
-      }
-    }
-  });
-
-  try{
-    await initCloudSync();
-  } catch(err){
-    console.error('Error conectando a la base de datos en la nube:', err);
-    showToast('⚠️ No se pudo conectar con la base de datos. Revisa tu conexión a internet.');
+  .field label{
+    display:block;
+    font-size:0.85rem;
+    font-weight:700;
+    margin-bottom:6px;
+    color:var(--text-soft);
   }
 
-  document.getElementById('cloudLoadingOverlay').style.display = 'none';
-
-  DB.cleanupLegacySampleCourses();
-
-  const session = DB.getSession();
-  if(session){
-    const user = currentUser();
-    if(user){
-      enterDashboard(user);
-      return;
-    }
+  .field input{
+    width:100%;
+    padding:12px 14px;
+    border-radius:10px;
+    border:1px solid var(--border-soft);
+    background:var(--input-bg);
+    color:var(--text);
+    font-size:0.95rem;
+    font-family:inherit;
+    transition:border-color .2s ease;
   }
-  showView('view-register');
-}
+  .field input:focus{outline:none; border-color:var(--turquoise);}
 
-startApp();
-</script>
+  .pass-wrap{position:relative;}
+  .pass-wrap input{padding-right:46px;}
+  .pass-toggle{
+    position:absolute;
+    right:10px;top:50%;
+    transform:translateY(-50%);
+    background:none;
+    border:none;
+    cursor:pointer;
+    font-size:1.05rem;
+    color:var(--text-soft);
+    padding:6px;
+  }
 
-</body>
-</html>
+  .btn-primary{
+    width:100%;
+    padding:13px;
+    border:none;
+    border-radius:30px;
+    background:var(--orange-accent);
+    color:#1c2433;
+    font-weight:800;
+    font-size:0.98rem;
+    cursor:pointer;
+    transition:transform .2s ease, box-shadow .2s ease;
+    box-shadow:0 6px 18px rgba(251,191,36,0.35);
+  }
+  .btn-primary:hover{transform:translateY(-2px); box-shadow:0 10px 24px rgba(251,191,36,0.45);}
+  .btn-primary:disabled{opacity:0.55; cursor:not-allowed; transform:none;}
+
+  .btn-secondary{
+    width:100%;
+    padding:13px;
+    border:1px solid var(--border-soft);
+    border-radius:30px;
+    background:transparent;
+    color:var(--text);
+    font-weight:700;
+    font-size:0.92rem;
+    cursor:pointer;
+    transition:background .2s ease;
+  }
+  .btn-secondary:hover{background:var(--input-bg);}
+
+  .btn-danger{
+    width:100%;
+    padding:12px;
+    border:1px solid rgba(239,68,68,0.4);
+    border-radius:30px;
+    background:transparent;
+    color:var(--red-accent);
+    font-weight:700;
+    font-size:0.9rem;
+    cursor:pointer;
+    transition:background .2s ease;
+  }
+  .btn-danger:hover{background:rgba(239,68,68,0.1);}
+
+  .google-btn{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    background:#fff;
+    color:#3c4043;
+    border:1px solid #dadce0;
+    border-radius:30px;
+    padding:11px 16px;
+    font-family:'Inter', sans-serif;
+    font-size:0.92rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:box-shadow .2s ease, background .2s ease;
+    margin-bottom:18px;
+  }
+  .google-btn:hover{
+    box-shadow:0 2px 10px rgba(0,0,0,0.18);
+    background:#f8f9fa;
+  }
+  .google-btn:disabled{opacity:0.6; cursor:not-allowed;}
+
+  .auth-divider{
+    display:flex;
+    align-items:center;
+    text-align:center;
+    color:var(--text-soft);
+    font-size:0.8rem;
+    margin-bottom:18px;
+  }
+  .auth-divider::before, .auth-divider::after{
+    content:"";
+    flex:1;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .auth-divider span{padding:0 12px; white-space:nowrap;}
+
+  .switch-line{
+    margin-top:18px;
+    text-align:center;
+    font-size:0.88rem;
+    color:var(--text-soft);
+  }
+  .switch-line button{
+    background:none;border:none;
+    color:var(--blue-2);
+    font-weight:700;
+    cursor:pointer;
+    font-size:0.88rem;
+    text-decoration:underline;
+  }
+  [data-theme="dark"] .switch-line button{color:var(--turquoise);}
+
+  .form-msg{
+    margin-top:14px;
+    padding:11px 14px;
+    border-radius:10px;
+    font-size:0.86rem;
+    font-weight:600;
+    display:none;
+  }
+  .form-msg.show{display:block;}
+  .form-msg.error{background:rgba(239,68,68,0.12); color:var(--red-accent);}
+  .form-msg.success{background:rgba(34,197,94,0.12); color:var(--green-accent);}
+
+  /* ===== EMAIL SIMULADO ===== */
+  .email-preview{
+    margin-top:16px;
+    border:1px dashed var(--border-soft);
+    border-radius:12px;
+    padding:16px;
+    background:var(--input-bg);
+    font-size:0.85rem;
+    display:none;
+  }
+  .email-preview.show{display:block; animation:floatIn .4s ease both;}
+  .email-preview .email-head{
+    font-weight:800;
+    color:var(--blue-2);
+    margin-bottom:8px;
+    font-size:0.82rem;
+  }
+  [data-theme="dark"] .email-preview .email-head{color:var(--turquoise);}
+  .email-preview p{color:var(--text-soft); line-height:1.6; margin-bottom:4px;}
+  .email-preview .confirm-btn{
+    display:inline-block;
+    margin-top:10px;
+    background:var(--turquoise);
+    color:#06352d;
+    padding:9px 18px;
+    border-radius:20px;
+    font-weight:800;
+    font-size:0.82rem;
+    text-decoration:none;
+    cursor:pointer;
+    border:none;
+  }
+
+  @keyframes floatIn{
+    from{opacity:0; transform:translateY(10px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  /* ===== DASHBOARD ===== */
+  .dash-wrap{
+    max-width:1200px;
+    margin:0 auto;
+    padding:36px 24px 80px;
+  }
+
+  .welcome-banner{
+    background:linear-gradient(135deg, var(--blue-2), var(--turquoise));
+    border-radius:22px;
+    padding:34px 30px;
+    color:#fff;
+    margin-bottom:32px;
+    box-shadow:var(--card-shadow);
+  }
+
+  .welcome-banner h1{
+    font-size:clamp(1.4rem, 3.4vw, 2rem);
+    margin-bottom:6px;
+  }
+  .welcome-banner p{opacity:0.95; font-size:0.95rem;}
+
+  .dash-tabs{
+    display:flex;
+    gap:10px;
+    margin-bottom:28px;
+    flex-wrap:wrap;
+  }
+
+  .dash-tab{
+    background:var(--card-bg);
+    border:1px solid var(--border-soft);
+    color:var(--text);
+    padding:10px 20px;
+    border-radius:30px;
+    font-weight:700;
+    font-size:0.9rem;
+    cursor:pointer;
+    transition:all .2s ease;
+    position:relative;
+  }
+  .dash-tab.active{background:var(--blue-2); color:#fff; border-color:var(--blue-2);}
+
+  .tab-badge{
+    position:absolute;
+    top:-6px;right:-6px;
+    background:var(--red-accent);
+    color:#fff;
+    font-size:0.68rem;
+    font-weight:800;
+    min-width:18px;
+    height:18px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    padding:0 4px;
+  }
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .section-heading{
+    font-size:1.3rem;
+    font-weight:800;
+    color:var(--purple-accent);
+    margin-bottom:20px;
+  }
+  [data-theme="dark"] .section-heading{color:#c4a4ff;}
+
+  /* Cursos grid */
+  .courses-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+    gap:22px;
+  }
+
+  .course-card{
+    background:var(--card-bg);
+    border:1px solid var(--border-soft);
+    border-radius:18px;
+    padding:24px;
+    box-shadow:var(--card-shadow);
+    cursor:pointer;
+    transition:transform .25s ease, box-shadow .25s ease;
+    position:relative;
+    overflow:hidden;
+  }
+  .course-card::before{
+    content:"";
+    position:absolute;top:0;left:0;right:0;height:5px;
+    background:linear-gradient(90deg, var(--blue-1), var(--turquoise));
+  }
+  .course-card:hover{transform:translateY(-6px); box-shadow:0 16px 36px rgba(30,60,120,0.2);}
+
+  .course-card .c-icon{font-size:2rem; margin-bottom:10px; display:block;}
+  .course-card h3{font-size:1.1rem; color:var(--orange-deep); margin-bottom:6px;}
+  .course-card p{font-size:0.88rem; color:var(--text-soft); margin-bottom:10px;}
+  .course-card .c-meta{
+    font-size:0.78rem;
+    color:var(--text-soft);
+    display:flex;
+    justify-content:space-between;
+    border-top:1px solid var(--border-soft);
+    padding-top:10px;
+  }
+  .pending-badge{
+    background:rgba(251,191,36,0.18);
+    color:var(--orange-deep);
+    padding:3px 10px;
+    border-radius:12px;
+    font-weight:800;
+    font-size:0.74rem;
+  }
+  [data-theme="dark"] .pending-badge{color:var(--orange-accent);}
+
+  .empty-state{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--text-soft);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    min-height:220px;
+    font-size:1.05rem;
+    font-weight:600;
+  }
+  .empty-state .e-icon{font-size:2.8rem; margin-bottom:14px; display:block;}
+
+  /* Curso detalle */
+  .back-courses{
+    background:none;border:none;
+    color:var(--blue-2);
+    font-weight:700;
+    cursor:pointer;
+    font-size:0.9rem;
+    margin-bottom:18px;
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  [data-theme="dark"] .back-courses{color:var(--turquoise);}
+
+  .course-detail-head{
+    background:var(--card-bg);
+    border:1px solid var(--border-soft);
+    border-radius:18px;
+    padding:26px;
+    margin-bottom:24px;
+    box-shadow:var(--card-shadow);
+  }
+  .course-detail-head h2{color:var(--orange-deep); font-size:1.4rem; margin-bottom:8px;}
+  .course-detail-head p{color:var(--text-soft); font-size:0.92rem;}
+
+  .task-list{display:flex; flex-direction:column; gap:16px;}
+
+  .task-card{
+    background:var(--card-bg);
+    border:1px solid var(--border-soft);
+    border-radius:16px;
+    padding:20px 22px;
+    box-shadow:var(--card-shadow);
+    position:relative;
+  }
+  .task-card.has-review::before{
+    content:"";
+    position:absolute; top:0; left:0; bottom:0; width:5px;
+    border-radius:16px 0 0 16px;
+    background:var(--green-accent);
+  }
+  .task-card.has-unseen-review{animation:pulseCard 1.8s ease 2;}
+  @keyframes pulseCard{
+    0%,100%{box-shadow:var(--card-shadow);}
+    50%{box-shadow:0 0 0 4px rgba(34,197,94,0.25), var(--card-shadow);}
+  }
+
+  .task-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:14px;
+    margin-bottom:10px;
+    flex-wrap:wrap;
+  }
+
+  .task-top h4{font-size:1.05rem; color:var(--text); display:flex; align-items:center; gap:8px;}
+
+  .new-dot{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--red-accent);
+    display:inline-block;
+    animation:blinkDot 1.3s ease infinite;
+  }
+  @keyframes blinkDot{0%,100%{opacity:1;} 50%{opacity:0.3;}}
+
+  .task-status{
+    padding:4px 12px;
+    border-radius:14px;
+    font-size:0.75rem;
+    font-weight:800;
+    white-space:nowrap;
+  }
+  .status-pending{background:rgba(251,191,36,0.18); color:var(--orange-deep);}
+  .status-submitted{background:rgba(34,197,94,0.18); color:var(--green-accent);}
+  .status-late{background:rgba(239,68,68,0.15); color:var(--red-accent);}
+  .status-reviewed{background:rgba(124,58,237,0.16); color:var(--purple-accent);}
+  [data-theme="dark"] .status-pending{color:var(--orange-accent);}
+  [data-theme="dark"] .status-reviewed{color:#c4a4ff;}
+
+  .task-card p.desc{color:var(--text-soft); font-size:0.9rem; margin-bottom:12px;}
+
+  .materials-mini{
+    display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;
+  }
+  .material-chip{
+    background:var(--input-bg);
+    border:1px solid var(--border-soft);
+    border-radius:10px;
+    padding:6px 10px;
+    font-size:0.8rem;
+    color:var(--text-soft);
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+  }
+  .material-download-btn{
+    background:var(--blue-2);
+    color:#fff;
+    border:none;
+    padding:4px 10px;
+    border-radius:8px;
+    font-weight:700;
+    font-size:0.74rem;
+    cursor:pointer;
+    transition:transform .2s ease;
+  }
+  .material-download-btn:hover{transform:translateY(-1px);}
+
+  .countdown{
+    font-size:0.85rem;
+    font-weight:700;
+    color:var(--blue-2);
+    margin-bottom:14px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  [data-theme="dark"] .countdown{color:var(--turquoise);}
+  .countdown.urgent{color:var(--red-accent);}
+
+  .upload-row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+
+  .file-label{
+    background:var(--input-bg);
+    border:1px solid var(--border-soft);
+    color:var(--text);
+    padding:10px 16px;
+    border-radius:10px;
+    font-size:0.85rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .2s ease;
+  }
+  .file-label:hover{background:var(--bg);}
+
+  .file-chosen{font-size:0.82rem; color:var(--text-soft);}
+
+  .send-btn{
+    background:var(--green-accent);
+    color:#fff;
+    border:none;
+    padding:10px 20px;
+    border-radius:10px;
+    font-weight:800;
+    font-size:0.85rem;
+    cursor:pointer;
+    transition:transform .2s ease;
+  }
+  .send-btn:hover{transform:translateY(-2px);}
+  .send-btn:disabled{opacity:0.5; cursor:not-allowed; transform:none;}
+
+  .submitted-info{
+    margin-top:6px;
+    font-size:0.82rem;
+    color:var(--green-accent);
+    font-weight:700;
+  }
+
+  .edit-window-box{
+    margin-top:12px;
+    background:var(--input-bg);
+    border:1px dashed var(--border-soft);
+    border-radius:10px;
+    padding:12px 14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .edit-window-box .ew-text{font-size:0.82rem; color:var(--text-soft);}
+  .edit-window-box .ew-text strong{color:var(--orange-deep);}
+  [data-theme="dark"] .edit-window-box .ew-text strong{color:var(--orange-accent);}
+
+  .edit-btn{
+    background:var(--blue-2);
+    color:#fff;
+    border:none;
+    padding:8px 16px;
+    border-radius:10px;
+    font-weight:700;
+    font-size:0.8rem;
+    cursor:pointer;
+    transition:transform .2s ease;
+  }
+  .edit-btn:hover{transform:translateY(-2px);}
+
+  .review-box{
+    margin-top:14px;
+    background:rgba(124,58,237,0.07);
+    border:1px solid rgba(124,58,237,0.25);
+    border-radius:12px;
+    padding:14px 16px;
+  }
+  [data-theme="dark"] .review-box{background:rgba(124,58,237,0.12);}
+  .review-box .rb-head{
+    font-weight:800;
+    color:var(--purple-accent);
+    font-size:0.86rem;
+    margin-bottom:6px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  [data-theme="dark"] .review-box .rb-head{color:#c4a4ff;}
+  .review-box .rb-grade{
+    display:inline-block;
+    background:var(--purple-accent);
+    color:#fff;
+    padding:2px 10px;
+    border-radius:10px;
+    font-size:0.76rem;
+    font-weight:800;
+    margin-bottom:8px;
+  }
+  .review-box p{font-size:0.86rem; color:var(--text-soft); line-height:1.55;}
+  .review-box .rb-time{font-size:0.74rem; color:var(--text-soft); margin-top:8px; opacity:0.8;}
+
+  /* Tareas pendientes (global) */
+  .pending-task-row{
+    background:var(--card-bg);
+    border:1px solid var(--border-soft);
+    border-radius:14px;
+    padding:16px 20px;
+    margin-bottom:14px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:14px;
+    flex-wrap:wrap;
+    box-shadow:var(--card-shadow);
+    cursor:pointer;
+    transition:transform .2s ease;
+  }
+  .pending-task-row:hover{transform:translateY(-3px);}
+  .ptr-left{display:flex; flex-direction:column; gap:3px;}
+  .ptr-left .ptr-course{font-size:0.76rem; color:var(--text-soft); font-weight:700;}
+  .ptr-left h4{font-size:1rem;}
+
+  /* Cuenta */
+  .account-grid{display:grid; grid-template-columns:1fr 1fr; gap:22px;}
+
+  .profile-card{margin-bottom:22px;}
+
+  .profile-row{
+    display:flex;
+    align-items:center;
+    gap:26px;
+    flex-wrap:wrap;
+  }
+
+  .avatar-wrap{position:relative; flex-shrink:0;}
+
+  .avatar-circle{
+    width:88px; height:88px;
+    border-radius:50%;
+    background:linear-gradient(135deg, var(--blue-2), var(--turquoise));
+    display:flex; align-items:center; justify-content:center;
+    color:#fff;
+    font-size:1.8rem;
+    font-weight:800;
+    overflow:hidden;
+    box-shadow:var(--card-shadow);
+  }
+  .avatar-circle img{width:100%; height:100%; object-fit:cover;}
+
+  .avatar-edit-btn{
+    position:absolute;
+    bottom:-2px; right:-2px;
+    width:30px; height:30px;
+    border-radius:50%;
+    background:var(--orange-accent);
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.9rem;
+    cursor:pointer;
+    border:2px solid var(--card-bg);
+    transition:transform .2s ease;
+  }
+  .avatar-edit-btn:hover{transform:scale(1.1);}
+
+  .profile-info{display:flex; flex-direction:column; gap:10px; flex:1; min-width:200px;}
+  .profile-field{display:flex; flex-direction:column; gap:2px;}
+  .pf-label{font-size:0.74rem; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.4px;}
+  .pf-value{font-size:0.98rem; font-weight:600; color:var(--text); word-break:break-word;}
+
+  .account-card{
+    background:var(--card-bg);
+    border:1px solid var(--border-soft);
+    border-radius:18px;
+    padding:26px;
+    box-shadow:var(--card-shadow);
+  }
+  .account-card h3{font-size:1.05rem; margin-bottom:16px; color:var(--purple-accent);}
+  [data-theme="dark"] .account-card h3{color:#c4a4ff;}
+
+  .danger-zone{border-color:rgba(239,68,68,0.3);}
+  .danger-zone h3{color:var(--red-accent);}
+  .danger-zone p{color:var(--text-soft); font-size:0.85rem; margin-bottom:16px;}
+
+  /* Toast */
+  .toast{
+    position:fixed;
+    bottom:26px;
+    right:26px;
+    background:var(--card-bg);
+    color:var(--text);
+    border:1px solid var(--border-soft);
+    border-left:5px solid var(--green-accent);
+    padding:16px 22px;
+    border-radius:12px;
+    box-shadow:0 14px 34px rgba(0,0,0,0.25);
+    max-width:340px;
+    z-index:2000;
+    transform:translateX(420px);
+    opacity:0;
+    transition:transform .4s ease, opacity .4s ease;
+    font-size:0.9rem;
+    font-weight:600;
+  }
+  .toast.show{transform:translateX(0); opacity:1;}
+  .toast.review{border-left-color:var(--purple-accent);}
+
+  footer.app-footer{
+    text-align:center;
+    padding:26px;
+    color:var(--text-soft);
+    font-size:0.82rem;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    header.topbar{animation:none;}
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width:760px){
+    .account-grid{grid-template-columns:1fr;}
+    .dash-tabs{gap:8px;}
+    .dash-tab{padding:8px 14px; font-size:0.82rem;}
+    .profile-row{justify-content:center; text-align:center;}
+    .profile-info{align-items:center;}
+  }
+
+  @media (max-width:520px){
+    .topbar-inner{padding:0 14px;}
+    .brand-area span.label{display:none;}
+    .auth-card{padding:28px 20px;}
+    .dash-wrap{padding:24px 14px 60px;}
+    .welcome-banner{padding:24px 20px;}
+    .task-top{flex-direction:column; align-items:flex-start;}
+    .toast{left:16px; right:16px; max-width:none; bottom:16px;}
+    .pending-task-row{flex-direction:column; align-items:flex-start;}
+    .field-row-2{grid-template-columns:1fr;}
+  }
