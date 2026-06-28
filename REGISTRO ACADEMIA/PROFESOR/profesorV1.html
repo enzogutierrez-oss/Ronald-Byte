@@ -610,7 +610,7 @@ document.getElementById('goLoginFromForgot').addEventListener('click', () => {
    usando tu propia cuenta de Gmail como remitente, sin
    necesidad de un servidor backend propio.
 ========================================================= */
-const EMAILJS_SERVICE_ID = 'service_t4fwlhj';
+const EMAILJS_SERVICE_ID = 'service_9d4v1wl';
 const EMAILJS_TEMPLATE_ID = 'template_y9ipeav';
 const EMAILJS_PUBLIC_KEY = 'bYaBJ1JCyeulC0r27';
 
@@ -874,11 +874,14 @@ async function handleGoogleSignIn(msgElId){
     const teachers = DB.getTeachers();
     let teacher = teachers.find(t => t.email === email);
 
+    let isNewAccount = false;
+
     if(teacher){
       if(!teacher.confirmed) teacher.confirmed = true;
       if(!teacher.photo && gUser.photoURL) teacher.photo = gUser.photoURL;
       DB.saveTeachers(teachers);
     } else {
+      isNewAccount = true;
       const fullName = gUser.displayName || email.split('@')[0];
       const parts = fullName.trim().split(' ');
       const firstName = parts[0] || fullName;
@@ -896,6 +899,11 @@ async function handleGoogleSignIn(msgElId){
       };
       teachers.push(teacher);
       DB.saveTeachers(teachers);
+    }
+
+    if(isNewAccount){
+      sendConfirmationEmail(email, teacher.name, '¡Bienvenido/a a la Academia Ronald Byte! Tu cuenta de docente ya está activa.')
+        .catch(err => console.error('No se pudo enviar el correo de bienvenida:', err));
     }
 
     DB.setSession(email);
