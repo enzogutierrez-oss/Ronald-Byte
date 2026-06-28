@@ -11,6 +11,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCaZAtITUFnlDjcRhlBcC8FMjeyN37Gva4",
@@ -23,10 +24,12 @@
 
   const app = initializeApp(firebaseConfig);
   const firestore = getFirestore(app);
+  const auth = getAuth(app);
+  const googleProvider = new GoogleAuthProvider();
 
   // Exponemos lo necesario al script clásico (no-módulo) de abajo,
   // ya que este bloque type="module" corre en su propio ámbito.
-  window.__firebase = { firestore, doc, getDoc, setDoc, updateDoc, onSnapshot };
+  window.__firebase = { firestore, doc, getDoc, setDoc, updateDoc, onSnapshot, auth, googleProvider, signInWithPopup, signOut };
   window.dispatchEvent(new Event('firebase-ready'));
 </script>
 </head>
@@ -72,6 +75,13 @@
     <div class="auth-card">
       <h2>Crear cuenta de estudiante</h2>
       <p class="sub">Regístrate para acceder a tus cursos y actividades.</p>
+
+      <button type="button" class="google-btn" id="googleBtnRegister">
+        <svg viewBox="0 0 48 48" width="20" height="20"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
+        <span>Acceder con Gmail</span>
+      </button>
+
+      <div class="auth-divider"><span>o regístrate con tu correo</span></div>
 
       <form id="formRegister" novalidate>
         <div class="field-row-2">
@@ -129,6 +139,13 @@
     <div class="auth-card">
       <h2>Iniciar sesión</h2>
       <p class="sub">Ingresa con tu correo y contraseña.</p>
+
+      <button type="button" class="google-btn" id="googleBtnLogin">
+        <svg viewBox="0 0 48 48" width="20" height="20"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
+        <span>Acceder con Gmail</span>
+      </button>
+
+      <div class="auth-divider"><span>o ingresa con tu correo</span></div>
 
       <form id="formLogin" novalidate>
         <div class="field">
@@ -220,7 +237,7 @@
       </div>
 
       <div class="account-grid">
-        <div class="account-card">
+        <div class="account-card" id="changePassCard">
           <h3>Cambiar contraseña</h3>
           <form id="formChangePass" novalidate>
             <div class="field">
@@ -576,6 +593,10 @@ document.getElementById('formLogin').addEventListener('submit', (e) => {
     showMsg('loginMsg', 'No existe una cuenta con ese correo.', 'error');
     return;
   }
+  if(user.authProvider === 'google'){
+    showMsg('loginMsg', 'Esta cuenta se creó con Gmail. Usa el botón "Acceder con Gmail" arriba.', 'error');
+    return;
+  }
   if(!user.confirmed){
     showMsg('loginMsg', 'Debes confirmar tu cuenta desde el correo antes de iniciar sesión.', 'error');
     return;
@@ -587,6 +608,77 @@ document.getElementById('formLogin').addEventListener('submit', (e) => {
 
   DB.setSession(email);
   enterDashboard(user);
+});
+
+/* =========================================================
+   ACCEDER CON GMAIL (Google Sign-In real vía Firebase Auth)
+========================================================= */
+async function handleGoogleSignIn(msgElId){
+  if(!window.__firebase || !window.__firebase.auth){
+    showMsg(msgElId, 'La conexión con Google aún no está lista. Intenta de nuevo en un segundo.', 'error');
+    return;
+  }
+
+  const { auth, googleProvider, signInWithPopup } = window.__firebase;
+
+  try{
+    const result = await signInWithPopup(auth, googleProvider);
+    const gUser = result.user;
+    const email = (gUser.email || '').trim().toLowerCase();
+
+    if(!email){
+      showMsg(msgElId, 'No se pudo obtener tu correo de Google.', 'error');
+      return;
+    }
+
+    const users = DB.getUsers();
+    let user = users.find(u => u.email === email);
+
+    if(user){
+      // Ya existía la cuenta (manual o de Google): solo iniciamos sesión.
+      if(!user.confirmed) user.confirmed = true; // entrar con Google confirma la cuenta automáticamente
+      if(!user.photo && gUser.photoURL) user.photo = gUser.photoURL;
+      DB.saveUsers(users);
+    } else {
+      // Primera vez con esta cuenta de Google: la creamos ya confirmada.
+      const fullName = gUser.displayName || email.split('@')[0];
+      const parts = fullName.trim().split(' ');
+      const firstName = parts[0] || fullName;
+      const lastName = parts.slice(1).join(' ') || '';
+
+      user = {
+        name: fullName,
+        firstName, lastName,
+        email,
+        password: null,
+        authProvider: 'google',
+        confirmed: true,
+        photo: gUser.photoURL || null,
+        createdAt: Date.now()
+      };
+      users.push(user);
+      DB.saveUsers(users);
+    }
+
+    DB.setSession(email);
+    enterDashboard(user);
+  } catch(err){
+    console.error('Error con Google Sign-In:', err);
+    if(err.code === 'auth/popup-closed-by-user'){
+      showMsg(msgElId, 'Cerraste la ventana de Google antes de terminar.', 'error');
+    } else {
+      showMsg(msgElId, 'No se pudo acceder con Gmail. Intenta de nuevo.', 'error');
+    }
+  }
+}
+
+document.getElementById('googleBtnRegister').addEventListener('click', () => {
+  clearMsg('registerMsg');
+  handleGoogleSignIn('registerMsg');
+});
+document.getElementById('googleBtnLogin').addEventListener('click', () => {
+  clearMsg('loginMsg');
+  handleGoogleSignIn('loginMsg');
 });
 
 /* =========================================================
@@ -1091,6 +1183,11 @@ function renderProfile(user){
   } else {
     circle.innerHTML = `<span id="avatarInitials">${getInitials(user)}</span>`;
   }
+
+  const changePassCard = document.getElementById('changePassCard');
+  if(changePassCard){
+    changePassCard.style.display = (user.authProvider === 'google') ? 'none' : '';
+  }
 }
 
 document.getElementById('avatarUpload').addEventListener('change', (e) => {
@@ -1131,6 +1228,11 @@ document.getElementById('formChangePass').addEventListener('submit', (e) => {
 
   const user = currentUser();
   if(!user) return;
+
+  if(user.authProvider === 'google'){
+    showMsg('changePassMsg', 'Tu cuenta usa Gmail para acceder, así que no tiene una contraseña propia que cambiar.', 'error');
+    return;
+  }
 
   const cur = document.getElementById('curPass').value;
   const next = document.getElementById('newPass').value;
