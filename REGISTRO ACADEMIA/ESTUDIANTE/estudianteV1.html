@@ -163,8 +163,45 @@
         <div class="form-msg" id="loginMsg"></div>
       </form>
 
+      <div class="forgot-line">
+        <button type="button" id="goForgotPass">¿Olvidaste tu contraseña?</button>
+      </div>
+
       <div class="switch-line">
         ¿No tienes cuenta? <button id="goRegister">Regístrate</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== VISTA: RECUPERAR CONTRASEÑA ===================== -->
+<section class="view" id="view-forgot">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h2>Recuperar contraseña</h2>
+      <p class="sub">Ingresa tu correo y generaremos una contraseña temporal para que puedas volver a entrar.</p>
+
+      <form id="formForgot" novalidate>
+        <div class="field">
+          <label for="forgotEmail">Correo</label>
+          <input type="email" id="forgotEmail" placeholder="tunombre@gmail.com" autocomplete="email" required>
+        </div>
+        <button type="submit" class="btn-primary">Generar contraseña temporal</button>
+        <div class="form-msg" id="forgotMsg"></div>
+
+        <div class="email-preview" id="forgotEmailPreview">
+          <div class="email-head">📧 Correo enviado (simulado)</div>
+          <p><strong>De:</strong> Academia Ronald Byte &lt;no-responder@ronaldbyte.edu&gt;</p>
+          <p><strong>Para:</strong> <span id="forgotEmailTo"></span></p>
+          <p><strong>Asunto:</strong> Recuperación de contraseña</p>
+          <p>Hola, generamos una contraseña temporal para que puedas volver a acceder a tu cuenta:</p>
+          <div class="temp-pass-box" id="tempPassBox"></div>
+          <p style="margin-top:10px; font-size:0.78rem;">Por seguridad, te recomendamos cambiarla luego desde "Mi Cuenta" una vez que inicies sesión.</p>
+        </div>
+      </form>
+
+      <div class="switch-line">
+        <button id="goLoginFromForgot">Volver a iniciar sesión</button>
       </div>
     </div>
   </div>
@@ -509,6 +546,16 @@ document.getElementById('goRegister').addEventListener('click', () => {
   document.getElementById('emailPreview').classList.remove('show');
   showView('view-register');
 });
+document.getElementById('goForgotPass').addEventListener('click', () => {
+  clearMsg('forgotMsg');
+  document.getElementById('forgotEmailPreview').classList.remove('show');
+  document.getElementById('formForgot').reset();
+  showView('view-forgot');
+});
+document.getElementById('goLoginFromForgot').addEventListener('click', () => {
+  clearMsg('loginMsg');
+  showView('view-login');
+});
 
 /* =========================================================
    REGISTRO DE ESTUDIANTE + "CORREO" DE CONFIRMACIÓN SIMULADO
@@ -574,6 +621,54 @@ document.getElementById('btnConfirmEmail').addEventListener('click', () => {
   showMsg('registerMsg', '¡Cuenta confirmada! Ya puedes iniciar sesión.', 'success');
   pendingConfirmation = null;
   setTimeout(() => showView('view-login'), 1400);
+});
+
+/* =========================================================
+   RECUPERAR CONTRASEÑA (genera una clave temporal localmente,
+   ya que el envío real de correos aún no está configurado)
+========================================================= */
+function generateTempPassword(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  let pass = '';
+  for(let i = 0; i < 8; i++){
+    pass += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return pass;
+}
+
+document.getElementById('formForgot').addEventListener('submit', (e) => {
+  e.preventDefault();
+  clearMsg('forgotMsg');
+  document.getElementById('forgotEmailPreview').classList.remove('show');
+
+  const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
+  if(!email){
+    showMsg('forgotMsg', 'Ingresa tu correo.', 'error');
+    return;
+  }
+
+  const users = DB.getUsers();
+  const user = users.find(u => u.email === email);
+
+  if(!user){
+    showMsg('forgotMsg', 'No existe una cuenta con ese correo.', 'error');
+    return;
+  }
+  if(user.authProvider === 'google'){
+    showMsg('forgotMsg', 'Esta cuenta usa Gmail para acceder. Usa el botón "Acceder con Gmail" en vez de una contraseña.', 'error');
+    return;
+  }
+
+  const tempPass = generateTempPassword();
+  user.password = tempPass;
+  user.confirmed = true; // si por algún motivo no estaba confirmada, esto también la habilita a entrar
+  DB.saveUsers(users);
+
+  document.getElementById('forgotEmailTo').textContent = email;
+  document.getElementById('tempPassBox').textContent = tempPass;
+  document.getElementById('forgotEmailPreview').classList.add('show');
+
+  showMsg('forgotMsg', 'Contraseña temporal generada. Cópiala para iniciar sesión.', 'success');
 });
 
 /* =========================================================
