@@ -8,8 +8,34 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styleestudianteV1.css">
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCaZAtITUFnlDjcRhlBcC8FMjeyN37Gva4",
+    authDomain: "academia-ronald-byte.firebaseapp.com",
+    projectId: "academia-ronald-byte",
+    storageBucket: "academia-ronald-byte.firebasestorage.app",
+    messagingSenderId: "685637296313",
+    appId: "1:685637296313:web:31d03ef2e10972453dbb68"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const firestore = getFirestore(app);
+
+  // Exponemos lo necesario al script clásico (no-módulo) de abajo,
+  // ya que este bloque type="module" corre en su propio ámbito.
+  window.__firebase = { firestore, doc, getDoc, setDoc, updateDoc, onSnapshot };
+  window.dispatchEvent(new Event('firebase-ready'));
+</script>
 </head>
 <body>
+
+<div id="cloudLoadingOverlay" style="position:fixed; inset:0; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; z-index:9999;">
+  <div style="font-size:2.4rem;">🎓</div>
+  <div style="font-weight:700; color:var(--text-soft); font-size:0.95rem;">Conectando con la Academia...</div>
+</div>
 
 <header class="topbar">
   <div class="topbar-inner">
@@ -243,23 +269,87 @@
    claves de almacenamiento.
 ========================================================= */
 
+/* =========================================================
+   "BASE DE DATOS" EN LA NUBE (Firebase Firestore)
+   Todo se guarda en un documento compartido en Firestore, así
+   que el docente y los estudiantes ven los mismos datos sin
+   importar el dispositivo o navegador desde el que entren.
+   Esta misma base de datos la comparte la intranet del
+   docente (intranet-docente.html), por eso usan el mismo
+   documento en Firestore.
+
+   La sesión (quién inició sesión en ESTE navegador) sigue
+   guardada en localStorage, porque es información de este
+   dispositivo, no algo que deba sincronizarse entre todos.
+========================================================= */
+
+const FIRESTORE_DOC_PATH = { collection: 'arb_data', id: 'shared' };
+
+// Caché en memoria: el resto del código sigue leyendo/escribiendo
+// de forma síncrona (igual que antes), pero por debajo se sincroniza
+// con Firestore en tiempo real.
+const cloudCache = {
+  users: [],
+  courses: [],
+  ready: false
+};
+
+let firestoreDocRef = null;
+let onCloudChangeCallback = null;
+let suppressNextSnapshotEcho = false;
+
+function setOnCloudChange(cb){ onCloudChangeCallback = cb; }
+
+async function initCloudSync(){
+  await new Promise(resolve => {
+    if(window.__firebase){ resolve(); return; }
+    window.addEventListener('firebase-ready', () => resolve(), { once:true });
+  });
+
+  const { firestore, doc, getDoc, setDoc, onSnapshot } = window.__firebase;
+  firestoreDocRef = doc(firestore, FIRESTORE_DOC_PATH.collection, FIRESTORE_DOC_PATH.id);
+
+  const snap = await getDoc(firestoreDocRef);
+  if(snap.exists()){
+    const data = snap.data();
+    cloudCache.users = data.users || [];
+    cloudCache.courses = data.courses || [];
+  } else {
+    cloudCache.users = [];
+    cloudCache.courses = [];
+    await setDoc(firestoreDocRef, { users: [], teachers: [], courses: [] });
+  }
+  cloudCache.ready = true;
+
+  onSnapshot(firestoreDocRef, (docSnap) => {
+    if(!docSnap.exists()) return;
+    const data = docSnap.data();
+    cloudCache.users = data.users || [];
+    cloudCache.courses = data.courses || [];
+    if(onCloudChangeCallback) onCloudChangeCallback();
+  });
+}
+
+function pushCloudUpdate(){
+  if(!firestoreDocRef) return;
+  const { updateDoc } = window.__firebase;
+  updateDoc(firestoreDocRef, {
+    users: cloudCache.users,
+    courses: cloudCache.courses
+  }).catch(err => {
+    console.error('No se pudo guardar en la nube:', err);
+    showToast('⚠️ No se pudo guardar el cambio en la nube. Revisa tu conexión.');
+  });
+}
+
 const DB = {
-  KEY_USERS: 'arb_users',
-  KEY_COURSES: 'arb_courses',
   KEY_SESSION: 'arb_session',
 
-  getUsers(){ return JSON.parse(localStorage.getItem(this.KEY_USERS) || '[]'); },
-  saveUsers(u){ localStorage.setItem(this.KEY_USERS, JSON.stringify(u)); },
+  getUsers(){ return cloudCache.users; },
+  saveUsers(u){ cloudCache.users = u; pushCloudUpdate(); },
 
-  getCourses(){
-    let c = JSON.parse(localStorage.getItem(this.KEY_COURSES) || 'null');
-    if(!c){
-      c = seedCourses();
-      this.saveCourses(c);
-    }
-    return c;
-  },
-  saveCourses(c){ localStorage.setItem(this.KEY_COURSES, JSON.stringify(c)); },
+  getCourses(){ return cloudCache.courses; },
+  saveCourses(c){ cloudCache.courses = c; pushCloudUpdate(); },
 
   // Migración: limpia los cursos de ejemplo que quedaron guardados de
   // versiones anteriores (c1/c2/c3 con esos nombres exactos), para que
@@ -1097,9 +1187,33 @@ document.getElementById('navLogout').addEventListener('click', () => {
 });
 
 /* =========================================================
-   INICIO: revisar si ya hay sesión activa
+   INICIO: conectar a la nube, luego revisar sesión activa
 ========================================================= */
-(function init(){
+async function startApp(){
+  setOnCloudChange(() => {
+    // Llega un cambio desde otro dispositivo (docente u otro estudiante).
+    // Refrescamos solo lo que está visible para no interrumpir al usuario.
+    const user = currentUser();
+    if(!user) return; // si ya no existe (p.ej. su cuenta fue eliminada), lo maneja currentUser/otros flujos
+
+    if(document.getElementById('view-dashboard').classList.contains('active')){
+      refreshAll();
+      if(document.getElementById('panel-course-detail').classList.contains('active') && activeCourseId){
+        const course = DB.getCourses().find(c => c.id === activeCourseId);
+        if(course) renderTasks(course);
+      }
+    }
+  });
+
+  try{
+    await initCloudSync();
+  } catch(err){
+    console.error('Error conectando a la base de datos en la nube:', err);
+    showToast('⚠️ No se pudo conectar con la base de datos. Revisa tu conexión a internet.');
+  }
+
+  document.getElementById('cloudLoadingOverlay').style.display = 'none';
+
   DB.cleanupLegacySampleCourses();
 
   const session = DB.getSession();
@@ -1111,7 +1225,9 @@ document.getElementById('navLogout').addEventListener('click', () => {
     }
   }
   showView('view-register');
-})();
+}
+
+startApp();
 </script>
 
 </body>
