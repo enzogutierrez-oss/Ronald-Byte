@@ -7,9 +7,35 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styleprofesorV1.css">
+<link rel="stylesheet" href="profesorV1.html">
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCaZAtITUFnlDjcRhlBcC8FMjeyN37Gva4",
+    authDomain: "academia-ronald-byte.firebaseapp.com",
+    projectId: "academia-ronald-byte",
+    storageBucket: "academia-ronald-byte.firebasestorage.app",
+    messagingSenderId: "685637296313",
+    appId: "1:685637296313:web:31d03ef2e10972453dbb68"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const firestore = getFirestore(app);
+
+  // Exponemos lo necesario al script clásico (no-módulo) de abajo,
+  // ya que este bloque type="module" corre en su propio ámbito.
+  window.__firebase = { firestore, doc, getDoc, setDoc, updateDoc, onSnapshot };
+  window.dispatchEvent(new Event('firebase-ready'));
+</script>
 </head>
 <body>
+
+<div id="cloudLoadingOverlay" style="position:fixed; inset:0; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; z-index:9999;">
+  <div style="font-size:2.4rem;">🧑‍🏫</div>
+  <div style="font-weight:700; color:var(--text-soft); font-size:0.95rem;">Conectando con la Academia...</div>
+</div>
 
 <header class="topbar">
   <div class="topbar-inner">
@@ -340,23 +366,81 @@
    estudiante (intranet.html). Mismas claves de localStorage.
 ========================================================= */
 
+/* =========================================================
+   "BASE DE DATOS" EN LA NUBE (Firebase Firestore)
+   Comparte el mismo documento que usa la intranet del
+   estudiante (intranet.html), agregando el campo "teachers".
+   Así el docente y los estudiantes ven los mismos datos sin
+   importar el dispositivo o navegador desde el que entren.
+
+   La sesión (quién inició sesión en ESTE navegador) sigue
+   guardada en localStorage, porque es información de este
+   dispositivo, no algo que deba sincronizarse entre todos.
+========================================================= */
+
+const FIRESTORE_DOC_PATH = { collection: 'arb_data', id: 'shared' };
+
+const cloudCache = {
+  teachers: [],
+  courses: [],
+  ready: false
+};
+
+let firestoreDocRef = null;
+let onCloudChangeCallback = null;
+
+function setOnCloudChange(cb){ onCloudChangeCallback = cb; }
+
+async function initCloudSync(){
+  await new Promise(resolve => {
+    if(window.__firebase){ resolve(); return; }
+    window.addEventListener('firebase-ready', () => resolve(), { once:true });
+  });
+
+  const { firestore, doc, getDoc, setDoc, onSnapshot } = window.__firebase;
+  firestoreDocRef = doc(firestore, FIRESTORE_DOC_PATH.collection, FIRESTORE_DOC_PATH.id);
+
+  const snap = await getDoc(firestoreDocRef);
+  if(snap.exists()){
+    const data = snap.data();
+    cloudCache.teachers = data.teachers || [];
+    cloudCache.courses = data.courses || [];
+  } else {
+    cloudCache.teachers = [];
+    cloudCache.courses = [];
+    await setDoc(firestoreDocRef, { users: [], teachers: [], courses: [] });
+  }
+  cloudCache.ready = true;
+
+  onSnapshot(firestoreDocRef, (docSnap) => {
+    if(!docSnap.exists()) return;
+    const data = docSnap.data();
+    cloudCache.teachers = data.teachers || [];
+    cloudCache.courses = data.courses || [];
+    if(onCloudChangeCallback) onCloudChangeCallback();
+  });
+}
+
+function pushCloudUpdate(){
+  if(!firestoreDocRef) return;
+  const { updateDoc } = window.__firebase;
+  updateDoc(firestoreDocRef, {
+    teachers: cloudCache.teachers,
+    courses: cloudCache.courses
+  }).catch(err => {
+    console.error('No se pudo guardar en la nube:', err);
+    showToast('⚠️ No se pudo guardar el cambio en la nube. Revisa tu conexión.');
+  });
+}
+
 const DB = {
-  KEY_TEACHERS: 'arb_teachers',
-  KEY_COURSES: 'arb_courses',
   KEY_TEACHER_SESSION: 'arb_teacher_session',
 
-  getTeachers(){ return JSON.parse(localStorage.getItem(this.KEY_TEACHERS) || '[]'); },
-  saveTeachers(t){ localStorage.setItem(this.KEY_TEACHERS, JSON.stringify(t)); },
+  getTeachers(){ return cloudCache.teachers; },
+  saveTeachers(t){ cloudCache.teachers = t; pushCloudUpdate(); },
 
-  getCourses(){
-    let c = JSON.parse(localStorage.getItem(this.KEY_COURSES) || 'null');
-    if(!c){
-      c = seedCourses();
-      this.saveCourses(c);
-    }
-    return c;
-  },
-  saveCourses(c){ localStorage.setItem(this.KEY_COURSES, JSON.stringify(c)); },
+  getCourses(){ return cloudCache.courses; },
+  saveCourses(c){ cloudCache.courses = c; pushCloudUpdate(); },
 
   getSession(){ return JSON.parse(localStorage.getItem(this.KEY_TEACHER_SESSION) || 'null'); },
   setSession(email){ localStorage.setItem(this.KEY_TEACHER_SESSION, JSON.stringify({email})); },
@@ -1281,16 +1365,44 @@ document.getElementById('navLogout').addEventListener('click', () => {
 });
 
 /* =========================================================
-   INICIO
+   INICIO: conectar a la nube, luego revisar sesión activa
 ========================================================= */
-(function init(){
+async function startApp(){
+  setOnCloudChange(() => {
+    const teacher = currentTeacher();
+    if(!teacher) return;
+    if(!document.getElementById('view-dashboard').classList.contains('active')) return;
+
+    if(document.getElementById('panel-courses').classList.contains('active')){
+      renderCourses();
+    }
+    if(document.getElementById('panel-course-detail').classList.contains('active') && activeCourseId){
+      const course = DB.getCourses().find(c => c.id === activeCourseId);
+      if(course) renderTeacherTasks(course);
+    }
+    if(document.getElementById('panel-submissions').classList.contains('active')){
+      renderSubmissionsPanel();
+    }
+  });
+
+  try{
+    await initCloudSync();
+  } catch(err){
+    console.error('Error conectando a la base de datos en la nube:', err);
+    showToast('⚠️ No se pudo conectar con la base de datos. Revisa tu conexión a internet.');
+  }
+
+  document.getElementById('cloudLoadingOverlay').style.display = 'none';
+
   const session = DB.getSession();
   if(session){
     const teacher = currentTeacher();
     if(teacher){ enterDashboard(teacher); return; }
   }
   showView('view-register');
-})();
+}
+
+startApp();
 </script>
 
 </body>
