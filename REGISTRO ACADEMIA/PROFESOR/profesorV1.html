@@ -32,6 +32,7 @@
   window.__firebase = { firestore, doc, getDoc, setDoc, updateDoc, onSnapshot, auth, googleProvider, signInWithPopup, signOut };
   window.dispatchEvent(new Event('firebase-ready'));
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link rel="stylesheet" href="styleprofesorV1.css">
 </head>
 <body>
@@ -116,14 +117,20 @@
 
         <button type="submit" class="btn-primary">Registrarme</button>
         <div class="form-msg" id="registerMsg"></div>
-
-        <div class="email-preview" id="emailPreview" style="display:none; margin-top:16px; border:1px dashed var(--border-soft); border-radius:12px; padding:16px; background:var(--input-bg); font-size:0.85rem;">
-          <div style="font-weight:800; color:var(--purple-accent); margin-bottom:8px; font-size:0.82rem;">📧 Correo enviado a tu Gmail</div>
-          <p style="color:var(--text-soft); margin-bottom:4px;"><strong>Para:</strong> <span id="emailTo"></span></p>
-          <p style="color:var(--text-soft); margin-bottom:4px;">Hola <span id="emailName"></span>, confirma tu cuenta de docente para activarla:</p>
-          <button type="button" id="btnConfirmEmail" style="margin-top:10px; background:var(--turquoise); color:#06352d; padding:9px 18px; border-radius:20px; font-weight:800; font-size:0.82rem; border:none; cursor:pointer;">Confirmar mi cuenta</button>
-        </div>
       </form>
+
+      <div class="email-preview" id="emailPreview" style="display:none; margin-top:16px; border:1px dashed var(--border-soft); border-radius:12px; padding:16px; background:var(--input-bg); font-size:0.85rem;">
+        <div style="font-weight:800; color:var(--purple-accent); margin-bottom:8px; font-size:0.82rem;">📧 Te enviamos un código a tu correo</div>
+        <p style="color:var(--text-soft); margin-bottom:4px;">Revisa la bandeja de entrada (o spam) de <strong id="emailTo"></strong> e ingresa aquí el código de 6 dígitos que recibiste:</p>
+        <form id="formConfirmCode" novalidate>
+          <div class="field" style="margin-top:12px;">
+            <input type="text" id="confirmCodeInput" placeholder="000000" maxlength="6" inputmode="numeric" style="text-align:center; font-size:1.3rem; font-weight:800; letter-spacing:4px; width:100%; padding:10px; border-radius:10px; border:1px solid var(--border-soft); background:var(--card-bg); color:var(--text);">
+          </div>
+          <button type="submit" class="btn-primary">Confirmar mi cuenta</button>
+        </form>
+        <button type="button" id="btnResendCode" style="display:block; width:100%; text-align:center; margin-top:10px; background:none; border:none; color:var(--text-soft); font-size:0.8rem; text-decoration:underline; cursor:pointer;">Reenviar código</button>
+        <div class="form-msg" id="confirmCodeMsg"></div>
+      </div>
 
       <div class="switch-line">
         ¿Ya tienes cuenta? <button id="goLogin">Inicia sesión</button>
@@ -598,11 +605,41 @@ document.getElementById('goLoginFromForgot').addEventListener('click', () => {
 });
 
 /* =========================================================
-   REGISTRO DOCENTE + CONFIRMACIÓN SIMULADA
+   ENVÍO DE CORREOS REALES (EmailJS)
+   EmailJS permite enviar correos reales desde el navegador
+   usando tu propia cuenta de Gmail como remitente, sin
+   necesidad de un servidor backend propio.
 ========================================================= */
-let pendingConfirmation = null;
+const EMAILJS_SERVICE_ID = 'service_t4fwlhj';
+const EMAILJS_TEMPLATE_ID = 'template_y9ipeav';
+const EMAILJS_PUBLIC_KEY = 'bYaBJ1JCyeulC0r27';
 
-document.getElementById('formRegister').addEventListener('submit', (e) => {
+if(window.emailjs){
+  window.emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+}
+
+function generateConfirmCode(){
+  return String(Math.floor(100000 + Math.random() * 900000)); // 6 dígitos
+}
+
+async function sendConfirmationEmail(toEmail, toName, code){
+  if(!window.emailjs){
+    throw new Error('EmailJS no está disponible.');
+  }
+  await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+    to_email: toEmail,
+    to_name: toName,
+    confirm_code: code
+  });
+}
+
+/* =========================================================
+   REGISTRO DOCENTE + CONFIRMACIÓN POR CÓDIGO REAL
+========================================================= */
+let pendingConfirmation = null; // { email, name, code, expiresAt }
+let resendCooldownTimer = null;
+
+document.getElementById('formRegister').addEventListener('submit', async (e) => {
   e.preventDefault();
   clearMsg('registerMsg');
 
@@ -638,24 +675,97 @@ document.getElementById('formRegister').addEventListener('submit', (e) => {
   const name = `${firstName} ${lastName}`.trim();
   teachers.push({ name, firstName, lastName, email, password: pass, confirmed:false, photo:null, createdAt: Date.now() });
   DB.saveTeachers(teachers);
-  pendingConfirmation = email;
 
-  document.getElementById('emailTo').textContent = email;
-  document.getElementById('emailName').textContent = name;
-  document.getElementById('emailPreview').style.display = 'block';
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Enviando código...';
 
-  showMsg('registerMsg', 'Cuenta creada. Confirma el correo simulado abajo.', 'success');
+  const code = generateConfirmCode();
+  pendingConfirmation = { email, name, code, expiresAt: Date.now() + 1000 * 60 * 10 };
+
+  try{
+    await sendConfirmationEmail(email, name, code);
+    document.getElementById('emailTo').textContent = email;
+    document.getElementById('emailPreview').style.display = 'block';
+    showMsg('registerMsg', 'Cuenta creada. Te enviamos un código de confirmación a tu correo.', 'success');
+    startResendCooldown();
+  } catch(err){
+    console.error('Error enviando correo de confirmación:', err);
+    showMsg('registerMsg', 'Tu cuenta se creó, pero no pudimos enviar el correo. Usa "Reenviar código" para intentarlo de nuevo.', 'error');
+    document.getElementById('emailTo').textContent = email;
+    document.getElementById('emailPreview').style.display = 'block';
+  }
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Registrarme';
 });
 
-document.getElementById('btnConfirmEmail').addEventListener('click', () => {
-  if(!pendingConfirmation) return;
+document.getElementById('formConfirmCode').addEventListener('submit', (e) => {
+  e.preventDefault();
+  clearMsg('confirmCodeMsg');
+
+  if(!pendingConfirmation){
+    showMsg('confirmCodeMsg', 'Vuelve a registrarte para recibir un nuevo código.', 'error');
+    return;
+  }
+
+  const entered = document.getElementById('confirmCodeInput').value.trim();
+
+  if(Date.now() > pendingConfirmation.expiresAt){
+    showMsg('confirmCodeMsg', 'El código ya venció. Usa "Reenviar código" para recibir uno nuevo.', 'error');
+    return;
+  }
+  if(entered !== pendingConfirmation.code){
+    showMsg('confirmCodeMsg', 'El código no es correcto. Revísalo e intenta de nuevo.', 'error');
+    return;
+  }
+
   const teachers = DB.getTeachers();
-  const t = teachers.find(x => x.email === pendingConfirmation);
+  const t = teachers.find(x => x.email === pendingConfirmation.email);
   if(t){ t.confirmed = true; DB.saveTeachers(teachers); }
+
   document.getElementById('emailPreview').style.display = 'none';
+  document.getElementById('formConfirmCode').reset();
   showMsg('registerMsg', '¡Cuenta confirmada! Ya puedes iniciar sesión.', 'success');
   pendingConfirmation = null;
+  clearInterval(resendCooldownTimer);
   setTimeout(() => showView('view-login'), 1400);
+});
+
+function startResendCooldown(){
+  const btn = document.getElementById('btnResendCode');
+  let seconds = 30;
+  btn.disabled = true;
+  btn.textContent = `Reenviar código (${seconds}s)`;
+  clearInterval(resendCooldownTimer);
+  resendCooldownTimer = setInterval(() => {
+    seconds--;
+    if(seconds <= 0){
+      clearInterval(resendCooldownTimer);
+      btn.disabled = false;
+      btn.textContent = 'Reenviar código';
+    } else {
+      btn.textContent = `Reenviar código (${seconds}s)`;
+    }
+  }, 1000);
+}
+
+document.getElementById('btnResendCode').addEventListener('click', async () => {
+  if(!pendingConfirmation) return;
+  clearMsg('confirmCodeMsg');
+
+  const code = generateConfirmCode();
+  pendingConfirmation.code = code;
+  pendingConfirmation.expiresAt = Date.now() + 1000 * 60 * 10;
+
+  try{
+    await sendConfirmationEmail(pendingConfirmation.email, pendingConfirmation.name, code);
+    showMsg('confirmCodeMsg', 'Te enviamos un nuevo código.', 'success');
+    startResendCooldown();
+  } catch(err){
+    console.error('Error reenviando código:', err);
+    showMsg('confirmCodeMsg', 'No se pudo reenviar el correo. Intenta de nuevo en un momento.', 'error');
+  }
 });
 
 /* =========================================================
