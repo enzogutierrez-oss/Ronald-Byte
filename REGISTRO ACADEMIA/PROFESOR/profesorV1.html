@@ -612,6 +612,7 @@ document.getElementById('goLoginFromForgot').addEventListener('click', () => {
 ========================================================= */
 const EMAILJS_SERVICE_ID = 'service_9d4v1wl';
 const EMAILJS_TEMPLATE_ID = 'template_y9ipeav';
+const EMAILJS_WELCOME_TEMPLATE_ID = 'template_2mn8vlm';
 const EMAILJS_PUBLIC_KEY = 'bYaBJ1JCyeulC0r27';
 
 if(window.emailjs){
@@ -630,6 +631,16 @@ async function sendConfirmationEmail(toEmail, toName, code){
     to_email: toEmail,
     to_name: toName,
     confirm_code: code
+  });
+}
+
+async function sendWelcomeEmail(toEmail, toName){
+  if(!window.emailjs){
+    throw new Error('EmailJS no está disponible.');
+  }
+  await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_WELCOME_TEMPLATE_ID, {
+    to_email: toEmail,
+    to_name: toName
   });
 }
 
@@ -902,7 +913,7 @@ async function handleGoogleSignIn(msgElId){
     }
 
     if(isNewAccount){
-      sendConfirmationEmail(email, teacher.name, '¡Bienvenido/a a la Academia Ronald Byte! Tu cuenta de docente ya está activa.')
+      sendWelcomeEmail(email, teacher.name)
         .catch(err => console.error('No se pudo enviar el correo de bienvenida:', err));
     }
 
