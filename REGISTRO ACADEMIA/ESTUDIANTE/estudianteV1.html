@@ -568,7 +568,7 @@ document.getElementById('goLoginFromForgot').addEventListener('click', () => {
    usando tu propia cuenta de Gmail como remitente, sin
    necesidad de un servidor backend propio.
 ========================================================= */
-const EMAILJS_SERVICE_ID = 'service_t4fwlhj';
+const EMAILJS_SERVICE_ID = 'service_9d4v1wl';
 const EMAILJS_TEMPLATE_ID = 'template_y9ipeav';
 const EMAILJS_PUBLIC_KEY = 'bYaBJ1JCyeulC0r27';
 
@@ -836,6 +836,8 @@ async function handleGoogleSignIn(msgElId){
     const users = DB.getUsers();
     let user = users.find(u => u.email === email);
 
+    let isNewAccount = false;
+
     if(user){
       // Ya existía la cuenta (manual o de Google): solo iniciamos sesión.
       if(!user.confirmed) user.confirmed = true; // entrar con Google confirma la cuenta automáticamente
@@ -843,6 +845,7 @@ async function handleGoogleSignIn(msgElId){
       DB.saveUsers(users);
     } else {
       // Primera vez con esta cuenta de Google: la creamos ya confirmada.
+      isNewAccount = true;
       const fullName = gUser.displayName || email.split('@')[0];
       const parts = fullName.trim().split(' ');
       const firstName = parts[0] || fullName;
@@ -860,6 +863,11 @@ async function handleGoogleSignIn(msgElId){
       };
       users.push(user);
       DB.saveUsers(users);
+    }
+
+    if(isNewAccount){
+      sendConfirmationEmail(email, user.name, '¡Bienvenido/a a la Academia Ronald Byte! Tu cuenta ya está activa.')
+        .catch(err => console.error('No se pudo enviar el correo de bienvenida:', err));
     }
 
     DB.setSession(email);
