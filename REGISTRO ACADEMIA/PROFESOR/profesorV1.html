@@ -301,6 +301,7 @@
 
       <div class="detail-actions">
         <button class="btn-primary compact" id="btnOpenNewTask">➕ Crear actividad</button>
+        <button class="btn-outline" id="btnEditCourseFromDetail">✏️ Editar datos del curso</button>
         <button class="toggle-archived-btn" id="toggleArchivedTasks">👁️ Mostrar actividades antiguas</button>
       </div>
 
@@ -1049,6 +1050,21 @@ function currentTeacher(){
   return teachers.find(t => t.email === session.email) || null;
 }
 
+// Cada docente solo ve y administra los cursos que él mismo creó.
+// Los cursos antiguos sin "ownerEmail" (creados antes de este cambio)
+// se consideran de nadie en particular y no aparecen aquí; quedan
+// visibles solo para los estudiantes, que no filtran por propietario.
+function getMyCourses(){
+  const teacher = currentTeacher();
+  if(!teacher) return [];
+  return DB.getCourses().filter(c => c.ownerEmail === teacher.email);
+}
+
+function isCourseMine(course){
+  const teacher = currentTeacher();
+  return !!(teacher && course && course.ownerEmail === teacher.email);
+}
+
 /* =========================================================
    TABS
 ========================================================= */
@@ -1079,7 +1095,7 @@ document.getElementById('toggleArchivedCourses').addEventListener('click', () =>
 
 function renderCourses(){
   const grid = document.getElementById('coursesGrid');
-  let courses = DB.getCourses();
+  let courses = getMyCourses();
   if(!showArchivedCourses) courses = courses.filter(c => !c.archived);
 
   if(courses.length === 0){
@@ -1110,6 +1126,7 @@ function renderCourses(){
         </div>
         <div class="c-actions">
           <button class="btn-outline" data-open-btn="${c.id}">Ver curso</button>
+          <button class="btn-outline" data-edit-course="${c.id}">✏️ Editar</button>
           <button class="btn-outline" data-toggle-course="${c.id}">${c.archived ? 'Mostrar' : 'Ocultar'}</button>
           <button class="btn-danger" data-delete-course="${c.id}">Eliminar</button>
         </div>
@@ -1120,10 +1137,24 @@ function renderCourses(){
   grid.querySelectorAll('[data-open], [data-open-btn]').forEach(el => {
     el.addEventListener('click', () => openCourse(el.dataset.open || el.dataset.openBtn));
   });
+  grid.querySelectorAll('[data-edit-course]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const c = DB.getCourses().find(cc => cc.id === btn.dataset.editCourse);
+      if(!isCourseMine(c)){
+        showToast('Ese curso no te pertenece.');
+        return;
+      }
+      enterCourseEditMode(c);
+    });
+  });
   grid.querySelectorAll('[data-toggle-course]').forEach(btn => {
     btn.addEventListener('click', () => {
       const courses = DB.getCourses();
       const c = courses.find(cc => cc.id === btn.dataset.toggleCourse);
+      if(!isCourseMine(c)){
+        showToast('Ese curso no te pertenece.');
+        return;
+      }
       c.archived = !c.archived;
       DB.saveCourses(courses);
       showToast(c.archived ? 'Curso ocultado. Los estudiantes ya no lo verán.' : 'Curso visible nuevamente para los estudiantes.');
@@ -1132,11 +1163,16 @@ function renderCourses(){
   });
   grid.querySelectorAll('[data-delete-course]').forEach(btn => {
     btn.addEventListener('click', () => {
+      const courses = DB.getCourses();
+      const c = courses.find(cc => cc.id === btn.dataset.deleteCourse);
+      if(!isCourseMine(c)){
+        showToast('Ese curso no te pertenece.');
+        return;
+      }
       const ok = confirm('¿Eliminar este curso por completo? Esta acción no se puede deshacer.');
       if(!ok) return;
-      let courses = DB.getCourses();
-      courses = courses.filter(cc => cc.id !== btn.dataset.deleteCourse);
-      DB.saveCourses(courses);
+      const filtered = courses.filter(cc => cc.id !== btn.dataset.deleteCourse);
+      DB.saveCourses(filtered);
       showToast('Curso eliminado.');
       renderCourses();
     });
@@ -1147,10 +1183,14 @@ function renderCourses(){
    CREAR CURSO
 ========================================================= */
 document.getElementById('btnOpenNewCourse').addEventListener('click', () => {
+  exitCourseEditMode();
+  document.getElementById('formCourse').reset();
+  resetCourseColorPicker();
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-new-course').classList.add('active');
 });
 document.getElementById('backFromNewCourse').addEventListener('click', () => {
+  exitCourseEditMode();
   switchPanel('panel-courses');
   renderCourses();
 });
@@ -1169,6 +1209,8 @@ function resetCourseColorPicker(){
   if(firstDot) firstDot.classList.add('selected');
   document.getElementById('courseColor').value = 'blue';
 }
+
+let editingCourseId = null; // si tiene valor, formCourse está en modo "editar" en vez de "crear"
 
 document.getElementById('formCourse').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -1189,22 +1231,71 @@ document.getElementById('formCourse').addEventListener('submit', (e) => {
     return;
   }
 
+  const teacher = currentTeacher();
   const courses = DB.getCourses();
-  courses.push({
-    id: 'c' + Date.now(),
-    name, desc, icon, color,
-    teacherFirstName, teacherLastName,
-    teacherName: `${teacherFirstName} ${teacherLastName}`.trim(),
-    subject, schedule,
-    archived:false, materials:[], tasks: []
-  });
-  DB.saveCourses(courses);
 
-  showMsg('courseMsg', `Curso "${name}" creado. Ya es visible para los estudiantes.`, 'success');
+  if(editingCourseId){
+    const c = courses.find(cc => cc.id === editingCourseId);
+    if(!c || !isCourseMine(c)){
+      showMsg('courseMsg', 'No puedes editar ese curso.', 'error');
+      return;
+    }
+    c.name = name; c.desc = desc; c.icon = icon; c.color = color;
+    c.teacherFirstName = teacherFirstName; c.teacherLastName = teacherLastName;
+    c.teacherName = `${teacherFirstName} ${teacherLastName}`.trim();
+    c.subject = subject; c.schedule = schedule;
+    DB.saveCourses(courses);
+
+    showMsg('courseMsg', `Curso "${name}" actualizado correctamente.`, 'success');
+  } else {
+    courses.push({
+      id: 'c' + Date.now(),
+      name, desc, icon, color,
+      ownerEmail: teacher ? teacher.email : null,
+      teacherFirstName, teacherLastName,
+      teacherName: `${teacherFirstName} ${teacherLastName}`.trim(),
+      subject, schedule,
+      archived:false, materials:[], tasks: []
+    });
+    DB.saveCourses(courses);
+
+    showMsg('courseMsg', `Curso "${name}" creado. Ya es visible para los estudiantes.`, 'success');
+  }
+
   document.getElementById('formCourse').reset();
   resetCourseColorPicker();
+  exitCourseEditMode();
   setTimeout(() => { switchPanel('panel-courses'); renderCourses(); }, 1100);
 });
+
+function enterCourseEditMode(course){
+  editingCourseId = course.id;
+  document.getElementById('courseName').value = course.name || '';
+  document.getElementById('courseDesc').value = course.desc || '';
+  document.getElementById('courseTeacherFirstName').value = course.teacherFirstName || '';
+  document.getElementById('courseTeacherLastName').value = course.teacherLastName || '';
+  document.getElementById('courseSubject').value = course.subject || '';
+  document.getElementById('courseSchedule').value = course.schedule || '';
+  document.getElementById('courseIcon').value = course.icon || '';
+
+  document.querySelectorAll('#courseColorPicker .color-dot').forEach(d => {
+    d.classList.toggle('selected', d.dataset.color === (course.color || 'blue'));
+  });
+  document.getElementById('courseColor').value = course.color || 'blue';
+
+  document.querySelector('#panel-new-course .create-task-card h3').textContent = 'Editar curso';
+  document.querySelector('#formCourse button[type="submit"]').textContent = 'Guardar cambios';
+  clearMsg('courseMsg');
+
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-new-course').classList.add('active');
+}
+
+function exitCourseEditMode(){
+  editingCourseId = null;
+  document.querySelector('#panel-new-course .create-task-card h3').textContent = 'Crear nuevo curso';
+  document.querySelector('#formCourse button[type="submit"]').textContent = 'Crear curso';
+}
 
 /* =========================================================
    DETALLE DE CURSO (docente): crear actividad, ver/ocultar/eliminar
@@ -1214,13 +1305,16 @@ let showArchivedTasks = false;
 let pendingTaskFiles = [];
 
 function openCourse(courseId){
+  const course = DB.getCourses().find(c => c.id === courseId);
+  if(!course || !isCourseMine(course)){
+    showToast('Ese curso no te pertenece.');
+    return;
+  }
+
   activeCourseId = courseId;
   showArchivedTasks = false;
   document.getElementById('toggleArchivedTasks').textContent = '👁️ Mostrar actividades antiguas';
   document.getElementById('newTaskCard').style.display = 'none';
-
-  const course = DB.getCourses().find(c => c.id === courseId);
-  if(!course) return;
 
   document.getElementById('detailCourseName').textContent = `${course.icon} ${course.name}`;
   document.getElementById('detailCourseDesc').textContent = course.desc;
@@ -1242,6 +1336,15 @@ document.getElementById('backToCourses').addEventListener('click', () => {
 document.getElementById('btnOpenNewTask').addEventListener('click', () => {
   const card = document.getElementById('newTaskCard');
   card.style.display = card.style.display === 'none' ? 'block' : 'none';
+});
+
+document.getElementById('btnEditCourseFromDetail').addEventListener('click', () => {
+  const course = DB.getCourses().find(c => c.id === activeCourseId);
+  if(!isCourseMine(course)){
+    showToast('Ese curso no te pertenece.');
+    return;
+  }
+  enterCourseEditMode(course);
 });
 
 document.getElementById('toggleArchivedTasks').addEventListener('click', () => {
@@ -1297,6 +1400,10 @@ document.getElementById('formTask').addEventListener('submit', (e) => {
 
   const courses = DB.getCourses();
   const course = courses.find(c => c.id === activeCourseId);
+  if(!isCourseMine(course)){
+    showMsg('taskMsg', 'Ese curso no te pertenece.', 'error');
+    return;
+  }
   course.tasks.push({
     id: 't' + Date.now(),
     title, desc, due,
@@ -1374,6 +1481,10 @@ function renderTeacherTasks(course){
     btn.addEventListener('click', () => {
       const courses = DB.getCourses();
       const c = courses.find(cc => cc.id === activeCourseId);
+      if(!isCourseMine(c)){
+        showToast('Ese curso no te pertenece.');
+        return;
+      }
       const t = c.tasks.find(tt => tt.id === btn.dataset.toggleTask);
       t.archived = !t.archived;
       DB.saveCourses(courses);
@@ -1384,10 +1495,14 @@ function renderTeacherTasks(course){
 
   list.querySelectorAll('[data-delete-task]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const ok = confirm('¿Eliminar esta actividad? Se perderán las entregas asociadas.');
-      if(!ok) return;
       const courses = DB.getCourses();
       const c = courses.find(cc => cc.id === activeCourseId);
+      if(!isCourseMine(c)){
+        showToast('Ese curso no te pertenece.');
+        return;
+      }
+      const ok = confirm('¿Eliminar esta actividad? Se perderán las entregas asociadas.');
+      if(!ok) return;
       c.tasks = c.tasks.filter(tt => tt.id !== btn.dataset.deleteTask);
       DB.saveCourses(courses);
       showToast('Actividad eliminada.');
@@ -1428,8 +1543,12 @@ function renderTeacherTasks(course){
 let reviewContext = null; // {courseId, taskId, studentEmail}
 
 function openReviewModal(taskId, studentEmail){
-  const courses = DB.getCourses();
+  const courses = getMyCourses();
   const course = courses.find(c => c.tasks.some(t => t.id === taskId));
+  if(!course){
+    showToast('Ese curso no te pertenece.');
+    return;
+  }
   const task = course.tasks.find(t => t.id === taskId);
   const sub = task.submissions.find(s => s.studentEmail === studentEmail);
 
@@ -1493,7 +1612,7 @@ document.getElementById('formReview').addEventListener('submit', (e) => {
 ========================================================= */
 
 function findSubmission(taskId, studentEmail){
-  const courses = DB.getCourses();
+  const courses = getMyCourses();
   for(const course of courses){
     const task = course.tasks.find(t => t.id === taskId);
     if(task){
@@ -1613,7 +1732,7 @@ function replaceSubmissionFile(taskId, studentEmail){
 ========================================================= */
 function renderSubmissionsPanel(){
   const grid = document.getElementById('submissionsGrid');
-  const courses = DB.getCourses();
+  const courses = getMyCourses();
 
   let rows = [];
   courses.forEach(c => {
