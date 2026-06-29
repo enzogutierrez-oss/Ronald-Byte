@@ -482,11 +482,24 @@
     position:absolute;top:0;left:0;right:0;height:5px;
     background:linear-gradient(90deg, var(--blue-1), var(--turquoise));
   }
+  .course-card.color-blue::before{background:linear-gradient(90deg, var(--blue-1), var(--turquoise));}
+  .course-card.color-turquoise::before{background:var(--turquoise);}
+  .course-card.color-green::before{background:var(--green-accent);}
+  .course-card.color-orange::before{background:var(--orange-accent);}
+  .course-card.color-purple::before{background:var(--purple-accent);}
+  .course-card.color-red::before{background:var(--red-accent);}
   .course-card:hover{transform:translateY(-6px); box-shadow:0 16px 36px rgba(30,60,120,0.2);}
 
   .course-card .c-icon{font-size:2rem; margin-bottom:10px; display:block;}
   .course-card h3{font-size:1.1rem; color:var(--orange-deep); margin-bottom:6px;}
   .course-card p{font-size:0.88rem; color:var(--text-soft); margin-bottom:10px;}
+  .course-card .c-info{
+    font-size:0.78rem;
+    color:var(--text-soft);
+    margin-bottom:10px;
+    line-height:1.6;
+  }
+  .course-card .c-info strong{color:var(--text); font-weight:700;}
   .course-card .c-meta{
     font-size:0.78rem;
     color:var(--text-soft);
