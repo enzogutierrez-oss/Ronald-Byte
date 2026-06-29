@@ -211,6 +211,18 @@
   </div>
 </section>
 
+<!-- ===================== VISTA: PENDIENTE DE APROBACIÓN ===================== -->
+<section class="view" id="view-pending-approval">
+  <div class="auth-wrap">
+    <div class="auth-card" style="text-align:center;">
+      <div style="font-size:3rem; margin-bottom:14px;">⏳</div>
+      <h2>Tu cuenta está pendiente de aprobación</h2>
+      <p class="sub">Un administrador de la Academia Ronald Byte debe autorizar tu cuenta de docente antes de que puedas acceder a la intranet. Te avisaremos por correo apenas sea aprobada.</p>
+      <button type="button" class="btn-secondary" id="btnLogoutFromPending" style="margin-top:10px;">Cerrar sesión</button>
+    </div>
+  </div>
+</section>
+
 <!-- ===================== VISTA: DASHBOARD DOCENTE ===================== -->
 <section class="view" id="view-dashboard">
   <div class="dash-wrap">
@@ -734,7 +746,7 @@ document.getElementById('formRegister').addEventListener('submit', async (e) => 
   }
 
   const name = `${firstName} ${lastName}`.trim();
-  teachers.push({ name, firstName, lastName, email, password: pass, confirmed:false, photo:null, createdAt: Date.now() });
+  teachers.push({ name, firstName, lastName, email, password: pass, confirmed:false, approvalStatus:'pending', photo:null, createdAt: Date.now() });
   DB.saveTeachers(teachers);
 
   const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -923,6 +935,12 @@ document.getElementById('formLogin').addEventListener('submit', (e) => {
     return;
   }
 
+  if(teacher.approvalStatus !== 'approved'){
+    DB.setSession(email);
+    showPendingApprovalView(teacher);
+    return;
+  }
+
   DB.setSession(email);
   enterDashboard(teacher);
 });
@@ -971,6 +989,7 @@ async function handleGoogleSignIn(msgElId){
         password: null,
         authProvider: 'google',
         confirmed: true,
+        approvalStatus: 'pending',
         photo: gUser.photoURL || null,
         createdAt: Date.now()
       };
@@ -984,6 +1003,12 @@ async function handleGoogleSignIn(msgElId){
     }
 
     DB.setSession(email);
+
+    if(teacher.approvalStatus !== 'approved'){
+      showPendingApprovalView(teacher);
+      return;
+    }
+
     enterDashboard(teacher);
   } catch(err){
     console.error('Error con Google Sign-In:', err);
@@ -1049,6 +1074,16 @@ function currentTeacher(){
   const teachers = DB.getTeachers();
   return teachers.find(t => t.email === session.email) || null;
 }
+
+function showPendingApprovalView(teacher){
+  document.getElementById('navLogout').style.display = 'none';
+  showView('view-pending-approval');
+}
+
+document.getElementById('btnLogoutFromPending').addEventListener('click', () => {
+  DB.clearSession();
+  showView('view-login');
+});
 
 // Cada docente solo ve y administra los cursos que él mismo creó.
 // Los cursos antiguos sin "ownerEmail" (creados antes de este cambio)
@@ -1959,14 +1994,43 @@ async function startApp(){
     showToast('⚠️ No se pudo conectar con la base de datos. Revisa tu conexión a internet.');
   }
 
+  migrateLegacyTeacherApproval();
+
   document.getElementById('cloudLoadingOverlay').style.display = 'none';
 
   const session = DB.getSession();
   if(session){
     const teacher = currentTeacher();
-    if(teacher){ enterDashboard(teacher); return; }
+    if(teacher){
+      if(teacher.approvalStatus !== 'approved'){
+        showPendingApprovalView(teacher);
+        return;
+      }
+      enterDashboard(teacher);
+      return;
+    }
   }
   showView('view-register');
+}
+
+// Migración: los docentes que ya existían antes de implementar el
+// sistema de aprobación quedan aprobados automáticamente, para no
+// bloquear el acceso de cuentas que ya estaban en uso. Solo los
+// docentes nuevos de aquí en adelante requieren aprobación del admin.
+function migrateLegacyTeacherApproval(){
+  const FLAG = 'arb_legacy_teacher_approval_migrated_v1';
+  if(localStorage.getItem(FLAG)) return;
+
+  const teachers = DB.getTeachers();
+  let changed = false;
+  teachers.forEach(t => {
+    if(!t.approvalStatus){
+      t.approvalStatus = 'approved';
+      changed = true;
+    }
+  });
+  if(changed) DB.saveTeachers(teachers);
+  localStorage.setItem(FLAG, '1');
 }
 
 startApp();
