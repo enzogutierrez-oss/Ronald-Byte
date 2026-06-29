@@ -196,7 +196,7 @@
         <div class="form-msg" id="forgotMsg"></div>
 
         <div class="email-preview" id="forgotEmailPreview" style="display:none; margin-top:16px; border:1px dashed var(--border-soft); border-radius:12px; padding:16px; background:var(--input-bg); font-size:0.85rem;">
-          <div style="font-weight:800; color:var(--purple-accent); margin-bottom:8px; font-size:0.82rem;">📧 Correo enviado (simulado)</div>
+          <div style="font-weight:800; color:var(--purple-accent); margin-bottom:8px; font-size:0.82rem;">📧 Correo enviado</div>
           <p style="color:var(--text-soft); margin-bottom:4px;"><strong>Para:</strong> <span id="forgotEmailTo"></span></p>
           <p style="color:var(--text-soft); margin-bottom:4px;">Generamos una contraseña temporal para que puedas volver a acceder a tu cuenta de docente:</p>
           <div class="temp-pass-box" id="tempPassBox"></div>
@@ -251,9 +251,39 @@
             <label for="courseDesc">Descripción breve</label>
             <input type="text" id="courseDesc" placeholder="Ej. Modelado y consultas SQL" required>
           </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="courseTeacherFirstName">Nombre del docente</label>
+              <input type="text" id="courseTeacherFirstName" placeholder="Ej. Carlos" required>
+            </div>
+            <div class="field">
+              <label for="courseTeacherLastName">Apellido del docente</label>
+              <input type="text" id="courseTeacherLastName" placeholder="Ej. Ruiz" required>
+            </div>
+          </div>
+          <div class="field">
+            <label for="courseSubject">Asignatura</label>
+            <input type="text" id="courseSubject" placeholder="Ej. Programación I" required>
+          </div>
+          <div class="field">
+            <label for="courseSchedule">Horario</label>
+            <input type="text" id="courseSchedule" placeholder="Ej. Lunes y Miércoles, 6:00 - 8:00 pm" required>
+          </div>
           <div class="field">
             <label for="courseIcon">Ícono (emoji)</label>
             <input type="text" id="courseIcon" placeholder="🗄️" maxlength="4">
+          </div>
+          <div class="field">
+            <label>Color del curso</label>
+            <div class="color-picker" id="courseColorPicker">
+              <button type="button" class="color-dot selected" data-color="blue" style="background:linear-gradient(90deg, var(--blue-1), var(--turquoise));"></button>
+              <button type="button" class="color-dot" data-color="turquoise" style="background:var(--turquoise);"></button>
+              <button type="button" class="color-dot" data-color="green" style="background:var(--green-accent);"></button>
+              <button type="button" class="color-dot" data-color="orange" style="background:var(--orange-accent);"></button>
+              <button type="button" class="color-dot" data-color="purple" style="background:var(--purple-accent);"></button>
+              <button type="button" class="color-dot" data-color="red" style="background:var(--red-accent);"></button>
+            </div>
+            <input type="hidden" id="courseColor" value="blue">
           </div>
           <button type="submit" class="btn-primary">Crear curso</button>
           <div class="form-msg" id="courseMsg"></div>
@@ -1060,12 +1090,20 @@ function renderCourses(){
   grid.innerHTML = courses.map(c => {
     const activeTasks = c.tasks.filter(t => !t.archived).length;
     const totalSubs = c.tasks.reduce((acc,t) => acc + (t.submissions ? t.submissions.length : 0), 0);
+    const colorClass = 'color-' + (c.color || 'blue');
     return `
-      <div class="course-card ${c.archived ? 'archived' : ''}">
+      <div class="course-card ${colorClass} ${c.archived ? 'archived' : ''}">
         ${c.archived ? '<span class="archived-tag">Oculto</span>' : ''}
         <span class="c-icon">${c.icon}</span>
         <h3 data-open="${c.id}">${escapeHtml(c.name)}</h3>
         <p>${escapeHtml(c.desc)}</p>
+        ${(c.teacherName || c.subject || c.schedule) ? `
+          <div class="c-info">
+            ${c.teacherName ? `🧑‍🏫 <strong>${escapeHtml(c.teacherName)}</strong><br>` : ''}
+            ${c.subject ? `📘 ${escapeHtml(c.subject)}<br>` : ''}
+            ${c.schedule ? `🕒 ${escapeHtml(c.schedule)}` : ''}
+          </div>
+        ` : ''}
         <div class="c-meta">
           <span>${activeTasks} actividad(es)</span>
           <span>${totalSubs} entrega(s)</span>
@@ -1117,26 +1155,54 @@ document.getElementById('backFromNewCourse').addEventListener('click', () => {
   renderCourses();
 });
 
+document.querySelectorAll('#courseColorPicker .color-dot').forEach(dot => {
+  dot.addEventListener('click', () => {
+    document.querySelectorAll('#courseColorPicker .color-dot').forEach(d => d.classList.remove('selected'));
+    dot.classList.add('selected');
+    document.getElementById('courseColor').value = dot.dataset.color;
+  });
+});
+
+function resetCourseColorPicker(){
+  document.querySelectorAll('#courseColorPicker .color-dot').forEach(d => d.classList.remove('selected'));
+  const firstDot = document.querySelector('#courseColorPicker .color-dot');
+  if(firstDot) firstDot.classList.add('selected');
+  document.getElementById('courseColor').value = 'blue';
+}
+
 document.getElementById('formCourse').addEventListener('submit', (e) => {
   e.preventDefault();
   clearMsg('courseMsg');
 
   const name = document.getElementById('courseName').value.trim();
   const desc = document.getElementById('courseDesc').value.trim();
+  const teacherFirstName = document.getElementById('courseTeacherFirstName').value.trim();
+  const teacherLastName = document.getElementById('courseTeacherLastName').value.trim();
+  const subject = document.getElementById('courseSubject').value.trim();
+  const schedule = document.getElementById('courseSchedule').value.trim();
+  const color = document.getElementById('courseColor').value || 'blue';
   let icon = document.getElementById('courseIcon').value.trim();
   if(!icon) icon = '📘';
 
-  if(!name || !desc){
-    showMsg('courseMsg', 'Completa el nombre y la descripción del curso.', 'error');
+  if(!name || !desc || !teacherFirstName || !teacherLastName || !subject || !schedule){
+    showMsg('courseMsg', 'Completa todos los campos obligatorios.', 'error');
     return;
   }
 
   const courses = DB.getCourses();
-  courses.push({ id: 'c' + Date.now(), name, desc, icon, archived:false, materials:[], tasks: [] });
+  courses.push({
+    id: 'c' + Date.now(),
+    name, desc, icon, color,
+    teacherFirstName, teacherLastName,
+    teacherName: `${teacherFirstName} ${teacherLastName}`.trim(),
+    subject, schedule,
+    archived:false, materials:[], tasks: []
+  });
   DB.saveCourses(courses);
 
   showMsg('courseMsg', `Curso "${name}" creado. Ya es visible para los estudiantes.`, 'success');
   document.getElementById('formCourse').reset();
+  resetCourseColorPicker();
   setTimeout(() => { switchPanel('panel-courses'); renderCourses(); }, 1100);
 });
 
