@@ -318,6 +318,12 @@
 
 <div class="toast" id="toast"></div>
 
+<div class="pass-reminder" id="passReminder">
+  <span class="pr-icon">🔑</span>
+  <span class="pr-text">Estás usando una contraseña temporal. Te recomendamos cambiarla desde "Mi Cuenta".</span>
+  <button type="button" id="passReminderClose" aria-label="Cerrar aviso">✕</button>
+</div>
+
 <script>
 /* =========================================================
    "BASE DE DATOS" LOCAL
@@ -571,6 +577,7 @@ document.getElementById('goLoginFromForgot').addEventListener('click', () => {
 const EMAILJS_SERVICE_ID = 'service_9d4v1wl';
 const EMAILJS_TEMPLATE_ID = 'template_y9ipeav';
 const EMAILJS_WELCOME_TEMPLATE_ID = 'template_2mn8vlm';
+const EMAILJS_RESET_TEMPLATE_ID = 'template_y9ipeav'; // ⚠️ Cámbialo cuando crees la plantilla de "Recuperar contraseña" en EmailJS
 const EMAILJS_PUBLIC_KEY = 'bYaBJ1JCyeulC0r27';
 
 if(window.emailjs){
@@ -599,6 +606,18 @@ async function sendWelcomeEmail(toEmail, toName){
   await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_WELCOME_TEMPLATE_ID, {
     to_email: toEmail,
     to_name: toName
+  });
+}
+
+async function sendTempPasswordEmail(toEmail, toName, tempPass){
+  if(!window.emailjs){
+    throw new Error('EmailJS no está disponible.');
+  }
+  await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_RESET_TEMPLATE_ID, {
+    to_email: toEmail,
+    to_name: toName,
+    confirm_code: tempPass, // ⚠️ usa el mismo nombre de variable que la plantilla de código mientras no se cree una plantilla propia
+    temp_password: tempPass
   });
 }
 
@@ -742,8 +761,8 @@ document.getElementById('btnResendCode').addEventListener('click', async () => {
 });
 
 /* =========================================================
-   RECUPERAR CONTRASEÑA (genera una clave temporal localmente,
-   ya que el envío real de correos aún no está configurado)
+   RECUPERAR CONTRASEÑA (genera una clave temporal y la envía
+   por correo real usando EmailJS)
 ========================================================= */
 function generateTempPassword(){
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
@@ -754,7 +773,7 @@ function generateTempPassword(){
   return pass;
 }
 
-document.getElementById('formForgot').addEventListener('submit', (e) => {
+document.getElementById('formForgot').addEventListener('submit', async (e) => {
   e.preventDefault();
   clearMsg('forgotMsg');
   document.getElementById('forgotEmailPreview').classList.remove('show');
@@ -777,16 +796,32 @@ document.getElementById('formForgot').addEventListener('submit', (e) => {
     return;
   }
 
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Enviando...';
+
   const tempPass = generateTempPassword();
-  user.password = tempPass;
-  user.confirmed = true; // si por algún motivo no estaba confirmada, esto también la habilita a entrar
-  DB.saveUsers(users);
 
-  document.getElementById('forgotEmailTo').textContent = email;
-  document.getElementById('tempPassBox').textContent = tempPass;
-  document.getElementById('forgotEmailPreview').classList.add('show');
+  try{
+    await sendTempPasswordEmail(email, user.name, tempPass);
 
-  showMsg('forgotMsg', 'Contraseña temporal generada. Cópiala para iniciar sesión.', 'success');
+    user.password = tempPass;
+    user.confirmed = true; // si por algún motivo no estaba confirmada, esto también la habilita a entrar
+    user.needsPasswordChange = true; // mostrará un aviso recordándole cambiarla en su próximo ingreso
+    DB.saveUsers(users);
+
+    document.getElementById('forgotEmailTo').textContent = email;
+    document.getElementById('tempPassBox').textContent = tempPass;
+    document.getElementById('forgotEmailPreview').classList.add('show');
+
+    showMsg('forgotMsg', 'Te enviamos una contraseña temporal a tu correo.', 'success');
+  } catch(err){
+    console.error('Error enviando correo de recuperación:', err);
+    showMsg('forgotMsg', 'No se pudo enviar el correo. Intenta de nuevo en un momento.', 'error');
+  }
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Generar contraseña temporal';
 });
 
 /* =========================================================
@@ -918,9 +953,33 @@ function enterDashboard(user){
   refreshAll();
   renderProfile(user);
 
+  if(user.needsPasswordChange){
+    showPasswordReminder();
+    const users = DB.getUsers();
+    const u = users.find(x => x.email === user.email);
+    if(u){
+      u.needsPasswordChange = false;
+      DB.saveUsers(users);
+    }
+  }
+
   clearInterval(masterInterval);
   masterInterval = setInterval(refreshTimers, 1000);
 }
+
+function showPasswordReminder(){
+  const el = document.getElementById('passReminder');
+  el.classList.add('show');
+  clearTimeout(window.__passReminderTimer);
+  window.__passReminderTimer = setTimeout(() => {
+    el.classList.remove('show');
+  }, 8000);
+}
+
+document.getElementById('passReminderClose').addEventListener('click', () => {
+  document.getElementById('passReminder').classList.remove('show');
+  clearTimeout(window.__passReminderTimer);
+});
 
 function currentUser(){
   const session = DB.getSession();
