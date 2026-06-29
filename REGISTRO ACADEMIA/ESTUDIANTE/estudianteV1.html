@@ -195,7 +195,7 @@
         <div class="form-msg" id="forgotMsg"></div>
 
         <div class="email-preview" id="forgotEmailPreview">
-          <div class="email-head">📧 Correo enviado (simulado)</div>
+          <div class="email-head">📧 Correo enviado</div>
           <p><strong>De:</strong> Academia Ronald Byte &lt;no-responder@ronaldbyte.edu&gt;</p>
           <p><strong>Para:</strong> <span id="forgotEmailTo"></span></p>
           <p><strong>Asunto:</strong> Recuperación de contraseña</p>
@@ -1043,11 +1043,19 @@ function renderCourses(){
   grid.innerHTML = courses.map(c => {
     const visibleTasks = c.tasks.filter(t => !t.archived);
     const pendingCount = visibleTasks.filter(t => !findMySubmission(t, user.email)).length;
+    const colorClass = 'color-' + (c.color || 'blue');
     return `
-      <div class="course-card" data-course="${c.id}">
+      <div class="course-card ${colorClass}" data-course="${c.id}">
         <span class="c-icon">${c.icon}</span>
         <h3>${escapeHtml(c.name)}</h3>
         <p>${escapeHtml(c.desc)}</p>
+        ${(c.teacherName || c.subject || c.schedule) ? `
+          <div class="c-info">
+            ${c.teacherName ? `🧑‍🏫 <strong>${escapeHtml(c.teacherName)}</strong><br>` : ''}
+            ${c.subject ? `📘 ${escapeHtml(c.subject)}<br>` : ''}
+            ${c.schedule ? `🕒 ${escapeHtml(c.schedule)}` : ''}
+          </div>
+        ` : ''}
         <div class="c-meta">
           <span>${visibleTasks.length} actividad(es)</span>
           ${pendingCount > 0 ? `<span class="pending-badge">${pendingCount} pendiente(s)</span>` : '<span>✅ Al día</span>'}
