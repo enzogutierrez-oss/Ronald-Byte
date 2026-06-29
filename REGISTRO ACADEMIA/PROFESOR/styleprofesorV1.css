@@ -374,6 +374,12 @@
     position:absolute;top:0;left:0;right:0;height:5px;
     background:linear-gradient(90deg, var(--purple-accent), var(--turquoise));
   }
+  .course-card.color-blue::before{background:linear-gradient(90deg, var(--blue-1), var(--turquoise));}
+  .course-card.color-turquoise::before{background:var(--turquoise);}
+  .course-card.color-green::before{background:var(--green-accent);}
+  .course-card.color-orange::before{background:var(--orange-accent);}
+  .course-card.color-purple::before{background:var(--purple-accent);}
+  .course-card.color-red::before{background:var(--red-accent);}
   .course-card.archived::before{background:var(--text-soft);}
   .course-card.archived{opacity:0.65;}
   .course-card:hover{transform:translateY(-4px); box-shadow:0 16px 36px rgba(30,60,120,0.2);}
@@ -381,6 +387,13 @@
   .course-card .c-icon{font-size:2rem; margin-bottom:10px; display:block;}
   .course-card h3{font-size:1.1rem; color:var(--orange-deep); margin-bottom:6px; cursor:pointer;}
   .course-card p{font-size:0.88rem; color:var(--text-soft); margin-bottom:10px;}
+  .course-card .c-info{
+    font-size:0.78rem;
+    color:var(--text-soft);
+    margin-bottom:10px;
+    line-height:1.6;
+  }
+  .course-card .c-info strong{color:var(--text); font-weight:700;}
   .course-card .c-meta{
     font-size:0.78rem; color:var(--text-soft);
     display:flex; justify-content:space-between;
@@ -436,6 +449,23 @@
   [data-theme="dark"] .create-task-card h3{color:#c4a4ff;}
 
   .field-row{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+
+  .color-picker{display:flex; gap:12px; flex-wrap:wrap; padding-top:4px;}
+  .color-dot{
+    width:34px; height:34px;
+    border-radius:50%;
+    border:3px solid transparent;
+    cursor:pointer;
+    padding:0;
+    box-shadow:0 2px 6px rgba(0,0,0,0.15);
+    transition:transform .2s ease, border-color .2s ease;
+  }
+  .color-dot:hover{transform:scale(1.1);}
+  .color-dot.selected{
+    border-color:var(--text);
+    transform:scale(1.12);
+  }
+  [data-theme="dark"] .color-dot.selected{border-color:#fff;}
 
   .file-label{
     background:var(--input-bg);
