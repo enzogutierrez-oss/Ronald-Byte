@@ -838,6 +838,45 @@
     font-weight:600;
   }
   .toast.show{transform:translateX(0); opacity:1;}
+
+  .pass-reminder{
+    position:fixed;
+    bottom:26px;
+    left:26px;
+    background:var(--card-bg);
+    color:var(--text);
+    border:1px solid var(--border-soft);
+    border-left:5px solid var(--orange-accent);
+    padding:14px 18px;
+    border-radius:12px;
+    box-shadow:0 14px 34px rgba(0,0,0,0.25);
+    max-width:340px;
+    z-index:2000;
+    display:none;
+    align-items:center;
+    gap:10px;
+    font-size:0.86rem;
+    font-weight:600;
+    transform:translateX(-420px);
+    opacity:0;
+    transition:transform .4s ease, opacity .4s ease;
+  }
+  .pass-reminder.show{
+    display:flex;
+    transform:translateX(0);
+    opacity:1;
+  }
+  .pass-reminder .pr-icon{font-size:1.2rem; flex-shrink:0;}
+  .pass-reminder .pr-text{flex:1; line-height:1.4;}
+  .pass-reminder button#passReminderClose{
+    background:none;
+    border:none;
+    color:var(--text-soft);
+    cursor:pointer;
+    font-size:0.9rem;
+    flex-shrink:0;
+    padding:2px;
+  }
   .toast.review{border-left-color:var(--purple-accent);}
 
   footer.app-footer{
@@ -868,6 +907,7 @@
     .welcome-banner{padding:24px 20px;}
     .task-top{flex-direction:column; align-items:flex-start;}
     .toast{left:16px; right:16px; max-width:none; bottom:16px;}
+    .pass-reminder{left:16px; right:16px; max-width:none; bottom:16px;}
     .pending-task-row{flex-direction:column; align-items:flex-start;}
     .field-row-2{grid-template-columns:1fr;}
   }
