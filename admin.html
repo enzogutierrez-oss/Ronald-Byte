@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Administración - Academia Ronald Byte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styleadmin.css">
+</head>
+<body>
+
+<div id="cloudLoadingOverlay" style="position:fixed; inset:0; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; z-index:9999;">
+  <div style="font-size:2.4rem;">👑</div>
+  <div style="font-weight:700; color:var(--text-soft); font-size:0.95rem;">Conectando con la Academia...</div>
+</div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="index.html" class="brand-area">
+      <span class="badge">👑</span>
+      <span class="label">Academia Ronald Byte — Admin</span>
+    </a>
+    <div class="topbar-right">
+      <a href="index.html" class="back-link">⬅ Inicio</a>
+      <button class="logout-btn" id="navLogout" style="display:none;">Cerrar sesión</button>
+      <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema claro/oscuro">
+        <svg id="sunIcon" viewBox="0 0 24 24" fill="none" stroke="#fff7d6" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="4"></line>
+          <line x1="12" y1="20" x2="12" y2="23"></line>
+          <line x1="4.2" y1="4.2" x2="6.3" y2="6.3"></line>
+          <line x1="17.7" y1="17.7" x2="19.8" y2="19.8"></line>
+          <line x1="1" y1="12" x2="4" y2="12"></line>
+          <line x1="20" y1="12" x2="23" y2="12"></line>
+          <line x1="4.2" y1="19.8" x2="6.3" y2="17.7"></line>
+          <line x1="17.7" y1="6.3" x2="19.8" y2="4.2"></line>
+        </svg>
+        <svg id="moonIcon" viewBox="0 0 24 24" fill="#dbe6ff" style="display:none;">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== VISTA: LOGIN ADMIN ===================== -->
+<section class="view active" id="view-login">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="crown">👑</div>
+      <h2>Panel de Administración</h2>
+      <p class="sub">Acceso exclusivo para la administración de la Academia Ronald Byte. Inicia sesión con la cuenta de Gmail autorizada.</p>
+
+      <button type="button" class="google-btn" id="googleBtnLogin">
+        <svg viewBox="0 0 48 48" width="20" height="20"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
+        <span>Acceder con Gmail</span>
+      </button>
+
+      <div class="form-msg" id="loginMsg"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== VISTA: DASHBOARD ADMIN ===================== -->
+<section class="view" id="view-dashboard">
+  <div class="dash-wrap">
+    <div class="welcome-banner">
+      <h1>Panel de Administración 👑</h1>
+      <p>Gestiona las cuentas de docentes y estudiantes de la Academia Ronald Byte.</p>
+    </div>
+
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <div class="dash-tabs">
+      <button class="dash-tab active" data-panel="panel-teachers">🧑‍🏫 Docentes <span class="tab-badge" id="teachersBadge" style="display:none;">0</span></button>
+      <button class="dash-tab" data-panel="panel-students">🎓 Estudiantes</button>
+    </div>
+
+    <div class="panel active" id="panel-teachers">
+      <h2 class="section-heading">Cuentas de docentes</h2>
+      <div class="person-list" id="teachersList"></div>
+    </div>
+
+    <div class="panel" id="panel-students">
+      <h2 class="section-heading">Cuentas de estudiantes</h2>
+      <div class="person-list" id="studentsList"></div>
+    </div>
+  </div>
+</section>
+
+<footer class="app-footer">
+  © 2026 Academia Ronald Byte. Panel de administración.
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCaZAtITUFnlDjcRhlBcC8FMjeyN37Gva4",
+    authDomain: "academia-ronald-byte.firebaseapp.com",
+    projectId: "academia-ronald-byte",
+    storageBucket: "academia-ronald-byte.firebasestorage.app",
+    messagingSenderId: "685637296313",
+    appId: "1:685637296313:web:31d03ef2e10972453dbb68"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const firestore = getFirestore(app);
+  const auth = getAuth(app);
+  const googleProvider = new GoogleAuthProvider();
+
+  window.__firebase = { firestore, doc, getDoc, setDoc, updateDoc, onSnapshot, auth, googleProvider, signInWithPopup, signOut };
+  window.dispatchEvent(new Event('firebase-ready'));
+</script>
+
+<script>
+/* =========================================================
+   ACCESO EXCLUSIVO: solo este correo puede entrar al panel
+========================================================= */
+const ADMIN_AUTHORIZED_EMAIL = 'enzoronaldgutierrez@gmail.com';
+
+/* =========================================================
+   "BASE DE DATOS" EN LA NUBE (Firebase Firestore)
+   Comparte el mismo documento que usan intranet.html e
+   intranet-docente.html (colección arb_data, documento shared).
+========================================================= */
+const FIRESTORE_DOC_PATH = { collection: 'arb_data', id: 'shared' };
+
+const cloudCache = { users: [], teachers: [], courses: [], ready:false };
+let firestoreDocRef = null;
+let onCloudChangeCallback = null;
+
+function setOnCloudChange(cb){ onCloudChangeCallback = cb; }
+
+async function initCloudSync(){
+  await new Promise(resolve => {
+    if(window.__firebase){ resolve(); return; }
+    window.addEventListener('firebase-ready', () => resolve(), { once:true });
+  });
+
+  const { firestore, doc, getDoc, setDoc, onSnapshot } = window.__firebase;
+  firestoreDocRef = doc(firestore, FIRESTORE_DOC_PATH.collection, FIRESTORE_DOC_PATH.id);
+
+  const snap = await getDoc(firestoreDocRef);
+  if(snap.exists()){
+    const data = snap.data();
+    cloudCache.users = data.users || [];
+    cloudCache.teachers = data.teachers || [];
+    cloudCache.courses = data.courses || [];
+  } else {
+    await setDoc(firestoreDocRef, { users: [], teachers: [], courses: [] });
+  }
+  cloudCache.ready = true;
+
+  onSnapshot(firestoreDocRef, (docSnap) => {
+    if(!docSnap.exists()) return;
+    const data = docSnap.data();
+    cloudCache.users = data.users || [];
+    cloudCache.teachers = data.teachers || [];
+    cloudCache.courses = data.courses || [];
+    if(onCloudChangeCallback) onCloudChangeCallback();
+  });
+}
+
+function pushTeachersUpdate(){
+  if(!firestoreDocRef) return;
+  const { updateDoc } = window.__firebase;
+  updateDoc(firestoreDocRef, { teachers: cloudCache.teachers }).catch(err => {
+    console.error('No se pudo guardar en la nube:', err);
+    showToast('⚠️ No se pudo guardar el cambio. Revisa tu conexión.');
+  });
+}
+
+const DB = {
+  getUsers(){ return cloudCache.users; },
+  getTeachers(){ return cloudCache.teachers; },
+  saveTeachers(t){ cloudCache.teachers = t; pushTeachersUpdate(); },
+  getCourses(){ return cloudCache.courses; }
+};
+
+/* =========================================================
+   UTILIDADES
+========================================================= */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=> t.classList.remove('show'), 4000);
+}
+function showView(id){
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function showMsg(elId, text, type){
+  const el = document.getElementById(elId);
+  el.textContent = text;
+  el.className = 'form-msg show ' + type;
+}
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+function getInitials(person){
+  const first = (person.firstName || person.name || '').trim();
+  const last = (person.lastName || '').trim();
+  const a = first.charAt(0).toUpperCase();
+  const b = last.charAt(0).toUpperCase();
+  return (a + b) || '?';
+}
+
+/* =========================================================
+   TEMA CLARO / OSCURO
+========================================================= */
+const themeToggle = document.getElementById('themeToggle');
+const sunIcon = document.getElementById('sunIcon');
+const moonIcon = document.getElementById('moonIcon');
+const root = document.documentElement;
+
+function setTheme(theme){
+  if(theme === 'dark'){
+    root.setAttribute('data-theme','dark');
+    sunIcon.style.display='none';
+    moonIcon.style.display='block';
+  } else {
+    root.removeAttribute('data-theme');
+    sunIcon.style.display='block';
+    moonIcon.style.display='none';
+  }
+}
+setTheme('light');
+themeToggle.addEventListener('click', () => {
+  const isDark = root.getAttribute('data-theme') === 'dark';
+  setTheme(isDark ? 'light' : 'dark');
+});
+
+/* =========================================================
+   ACCESO EXCLUSIVO VÍA GOOGLE SIGN-IN
+========================================================= */
+const ADMIN_SESSION_KEY = 'arb_admin_session';
+
+document.getElementById('googleBtnLogin').addEventListener('click', async () => {
+  if(!window.__firebase || !window.__firebase.auth){
+    showMsg('loginMsg', 'La conexión con Google aún no está lista. Intenta de nuevo en un segundo.', 'error');
+    return;
+  }
+
+  const { auth, googleProvider, signInWithPopup } = window.__firebase;
+
+  try{
+    const result = await signInWithPopup(auth, googleProvider);
+    const email = (result.user.email || '').trim().toLowerCase();
+
+    if(email !== ADMIN_AUTHORIZED_EMAIL.toLowerCase()){
+      showMsg('loginMsg', 'Esta cuenta de Gmail no tiene autorización para entrar al panel de administración.', 'error');
+      await window.__firebase.signOut(auth);
+      return;
+    }
+
+    localStorage.setItem(ADMIN_SESSION_KEY, '1');
+    enterDashboard();
+  } catch(err){
+    console.error('Error con Google Sign-In:', err);
+    showMsg('loginMsg', 'No se pudo acceder con Gmail. Intenta de nuevo.', 'error');
+  }
+});
+
+document.getElementById('navLogout').addEventListener('click', () => {
+  localStorage.removeItem(ADMIN_SESSION_KEY);
+  if(window.__firebase && window.__firebase.auth){
+    window.__firebase.signOut(window.__firebase.auth).catch(()=>{});
+  }
+  document.getElementById('navLogout').style.display = 'none';
+  showView('view-login');
+});
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+function enterDashboard(){
+  document.getElementById('navLogout').style.display = 'inline-block';
+  showView('view-dashboard');
+  renderAll();
+}
+
+document.querySelectorAll('.dash-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(tab.dataset.panel).classList.add('active');
+  });
+});
+
+function renderAll(){
+  renderStats();
+  renderTeachers();
+  renderStudents();
+}
+
+function renderStats(){
+  const users = DB.getUsers();
+  const teachers = DB.getTeachers();
+  const courses = DB.getCourses();
+  const pendingCount = teachers.filter(t => t.approvalStatus === 'pending').length;
+
+  const grid = document.getElementById('statsGrid');
+  grid.innerHTML = `
+    <div class="stat-card"><div class="stat-num">${users.length}</div><div class="stat-label">Estudiantes registrados</div></div>
+    <div class="stat-card"><div class="stat-num">${teachers.length}</div><div class="stat-label">Docentes registrados</div></div>
+    <div class="stat-card"><div class="stat-num">${pendingCount}</div><div class="stat-label">Docentes por aprobar</div></div>
+    <div class="stat-card"><div class="stat-num">${courses.length}</div><div class="stat-label">Cursos creados</div></div>
+  `;
+
+  const badge = document.getElementById('teachersBadge');
+  if(pendingCount > 0){ badge.style.display = 'flex'; badge.textContent = pendingCount; }
+  else { badge.style.display = 'none'; }
+}
+
+function statusPillHtml(teacher){
+  const status = teacher.approvalStatus || 'pending';
+  if(status === 'approved') return '<span class="status-pill status-approved">✅ Aprobado</span>';
+  if(status === 'rejected') return '<span class="status-pill status-rejected">⛔ Rechazado</span>';
+  return '<span class="status-pill status-pending">⏳ Pendiente</span>';
+}
+
+function confirmedPillHtml(person){
+  return person.confirmed
+    ? '<span class="status-pill status-confirmed">📧 Correo confirmado</span>'
+    : '<span class="status-pill status-unconfirmed">✉️ Correo sin confirmar</span>';
+}
+
+function renderTeachers(){
+  const list = document.getElementById('teachersList');
+  const teachers = DB.getTeachers().slice().sort((a,b) => {
+    // Pendientes primero, luego por fecha de creación más reciente
+    const aPending = (a.approvalStatus || 'pending') === 'pending' ? 0 : 1;
+    const bPending = (b.approvalStatus || 'pending') === 'pending' ? 0 : 1;
+    if(aPending !== bPending) return aPending - bPending;
+    return (b.createdAt || 0) - (a.createdAt || 0);
+  });
+
+  if(teachers.length === 0){
+    list.innerHTML = `<div class="empty-state"><span class="e-icon">📭</span>Todavía no hay docentes registrados.</div>`;
+    return;
+  }
+
+  list.innerHTML = teachers.map(t => {
+    const status = t.approvalStatus || 'pending';
+    const isPending = status === 'pending';
+    return `
+      <div class="person-card ${isPending ? 'pending' : ''}">
+        <div class="person-avatar">${t.photo ? `<img src="${t.photo}" alt="">` : getInitials(t)}</div>
+        <div class="person-info">
+          <div class="p-name">${escapeHtml(t.name || (t.firstName + ' ' + t.lastName))}</div>
+          <div class="p-email">${escapeHtml(t.email)}</div>
+        </div>
+        ${statusPillHtml(t)}
+        ${confirmedPillHtml(t)}
+        <div class="person-actions">
+          ${status !== 'approved' ? `<button class="btn-approve" data-approve="${escapeHtml(t.email)}">✅ Aprobar</button>` : ''}
+          ${status !== 'rejected' ? `<button class="btn-reject" data-reject="${escapeHtml(t.email)}">⛔ Rechazar</button>` : ''}
+          ${status === 'approved' ? `<button class="btn-revoke" data-revoke="${escapeHtml(t.email)}">Revocar acceso</button>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  list.querySelectorAll('[data-approve]').forEach(btn => {
+    btn.addEventListener('click', () => updateTeacherStatus(btn.dataset.approve, 'approved'));
+  });
+  list.querySelectorAll('[data-reject]').forEach(btn => {
+    btn.addEventListener('click', () => updateTeacherStatus(btn.dataset.reject, 'rejected'));
+  });
+  list.querySelectorAll('[data-revoke]').forEach(btn => {
+    btn.addEventListener('click', () => updateTeacherStatus(btn.dataset.revoke, 'pending'));
+  });
+}
+
+function updateTeacherStatus(email, newStatus){
+  const teachers = DB.getTeachers();
+  const t = teachers.find(x => x.email === email);
+  if(!t) return;
+  t.approvalStatus = newStatus;
+  DB.saveTeachers(teachers);
+
+  const labels = { approved:'aprobada', rejected:'rechazada', pending:'puesta en pendiente de nuevo' };
+  showToast(`Cuenta de ${t.name || t.email} ${labels[newStatus] || 'actualizada'}.`);
+  renderStats();
+  renderTeachers();
+}
+
+function renderStudents(){
+  const list = document.getElementById('studentsList');
+  const users = DB.getUsers().slice().sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+  if(users.length === 0){
+    list.innerHTML = `<div class="empty-state"><span class="e-icon">📭</span>Todavía no hay estudiantes registrados.</div>`;
+    return;
+  }
+
+  list.innerHTML = users.map(u => `
+    <div class="person-card">
+      <div class="person-avatar">${u.photo ? `<img src="${u.photo}" alt="">` : getInitials(u)}</div>
+      <div class="person-info">
+        <div class="p-name">${escapeHtml(u.name || (u.firstName + ' ' + u.lastName))}</div>
+        <div class="p-email">${escapeHtml(u.email)}</div>
+      </div>
+      ${confirmedPillHtml(u)}
+    </div>
+  `).join('');
+}
+
+/* =========================================================
+   INICIO
+========================================================= */
+async function startApp(){
+  setOnCloudChange(() => {
+    if(document.getElementById('view-dashboard').classList.contains('active')){
+      renderAll();
+    }
+  });
+
+  try{
+    await initCloudSync();
+  } catch(err){
+    console.error('Error conectando a la base de datos en la nube:', err);
+    showToast('⚠️ No se pudo conectar con la base de datos. Revisa tu conexión a internet.');
+  }
+
+  document.getElementById('cloudLoadingOverlay').style.display = 'none';
+
+  // La sesión de admin se revalida con Firebase Auth, no solo con el flag local,
+  // para evitar que alguien reactive el acceso editando el localStorage a mano.
+  const { auth } = window.__firebase;
+  auth.onAuthStateChanged((firebaseUser) => {
+    if(firebaseUser && (firebaseUser.email || '').toLowerCase() === ADMIN_AUTHORIZED_EMAIL.toLowerCase()){
+      localStorage.setItem(ADMIN_SESSION_KEY, '1');
+      enterDashboard();
+    } else {
+      localStorage.removeItem(ADMIN_SESSION_KEY);
+      document.getElementById('navLogout').style.display = 'none';
+      if(!document.getElementById('view-dashboard').classList.contains('active')){
+        showView('view-login');
+      }
+    }
+  });
+}
+
+startApp();
+</script>
+
+</body>
+</html>
