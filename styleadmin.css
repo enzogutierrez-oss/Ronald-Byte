@@ -295,12 +295,12 @@
     transition:background .2s ease;
   }
   .btn-reject:hover{background:rgba(239,68,68,0.1);}
-  .btn-revoke{
-    background:transparent; color:var(--text-soft); border:1px solid var(--border-soft);
+  .btn-delete-account{
+    background:var(--red-accent); color:#fff; border:none;
     padding:8px 16px; border-radius:20px; font-weight:700; font-size:0.8rem; cursor:pointer;
-    transition:background .2s ease;
+    transition:transform .2s ease;
   }
-  .btn-revoke:hover{background:var(--input-bg);}
+  .btn-delete-account:hover{transform:translateY(-2px);}
 
   .empty-state{
     text-align:center; padding:50px 20px; color:var(--text-soft);
