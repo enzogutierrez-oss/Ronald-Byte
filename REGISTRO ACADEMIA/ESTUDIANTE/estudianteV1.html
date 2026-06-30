@@ -1577,14 +1577,39 @@ document.getElementById('navLogout').addEventListener('click', () => {
 });
 
 /* =========================================================
+   VIGILANCIA EN TIEMPO REAL DE LA CUENTA DEL ESTUDIANTE
+   Si el admin elimina la cuenta mientras el estudiante tiene la
+   intranet abierta, esto reacciona al instante (sin esperar a que
+   recargue la página), gracias a onSnapshot.
+========================================================= */
+function enforceSessionStatus(){
+  const session = DB.getSession();
+  if(!session) return; // no hay sesión activa, nada que vigilar
+
+  const users = DB.getUsers();
+  const user = users.find(u => u.email === session.email);
+
+  if(!user){
+    // El admin eliminó la cuenta: cerramos sesión al instante
+    DB.clearSession();
+    clearInterval(masterInterval);
+    document.getElementById('navLogout').style.display = 'none';
+    showToast('⚠️ Tu cuenta fue eliminada por un administrador.');
+    showView('view-login');
+  }
+}
+
+/* =========================================================
    INICIO: conectar a la nube, luego revisar sesión activa
 ========================================================= */
 async function startApp(){
   setOnCloudChange(() => {
     // Llega un cambio desde otro dispositivo (docente u otro estudiante).
     // Refrescamos solo lo que está visible para no interrumpir al usuario.
+    enforceSessionStatus();
+
     const user = currentUser();
-    if(!user) return; // si ya no existe (p.ej. su cuenta fue eliminada), lo maneja currentUser/otros flujos
+    if(!user) return; // si ya no existe (p.ej. su cuenta fue eliminada), lo maneja enforceSessionStatus
 
     if(document.getElementById('view-dashboard').classList.contains('active')){
       refreshAll();
