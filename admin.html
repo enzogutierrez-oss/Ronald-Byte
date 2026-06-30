@@ -177,8 +177,18 @@ function pushTeachersUpdate(){
   });
 }
 
+function pushUsersUpdate(){
+  if(!firestoreDocRef) return;
+  const { updateDoc } = window.__firebase;
+  updateDoc(firestoreDocRef, { users: cloudCache.users }).catch(err => {
+    console.error('No se pudo guardar en la nube:', err);
+    showToast('⚠️ No se pudo guardar el cambio. Revisa tu conexión.');
+  });
+}
+
 const DB = {
   getUsers(){ return cloudCache.users; },
+  saveUsers(u){ cloudCache.users = u; pushUsersUpdate(); },
   getTeachers(){ return cloudCache.teachers; },
   saveTeachers(t){ cloudCache.teachers = t; pushTeachersUpdate(); },
   getCourses(){ return cloudCache.courses; }
@@ -367,7 +377,7 @@ function renderTeachers(){
         <div class="person-actions">
           ${status !== 'approved' ? `<button class="btn-approve" data-approve="${escapeHtml(t.email)}">✅ Aprobar</button>` : ''}
           ${status !== 'rejected' ? `<button class="btn-reject" data-reject="${escapeHtml(t.email)}">⛔ Rechazar</button>` : ''}
-          ${status === 'approved' ? `<button class="btn-revoke" data-revoke="${escapeHtml(t.email)}">Revocar acceso</button>` : ''}
+          <button class="btn-delete-account" data-delete-teacher="${escapeHtml(t.email)}">🗑️ Eliminar cuenta</button>
         </div>
       </div>
     `;
@@ -379,8 +389,8 @@ function renderTeachers(){
   list.querySelectorAll('[data-reject]').forEach(btn => {
     btn.addEventListener('click', () => updateTeacherStatus(btn.dataset.reject, 'rejected'));
   });
-  list.querySelectorAll('[data-revoke]').forEach(btn => {
-    btn.addEventListener('click', () => updateTeacherStatus(btn.dataset.revoke, 'pending'));
+  list.querySelectorAll('[data-delete-teacher]').forEach(btn => {
+    btn.addEventListener('click', () => deleteTeacherAccount(btn.dataset.deleteTeacher));
   });
 }
 
@@ -393,6 +403,22 @@ function updateTeacherStatus(email, newStatus){
 
   const labels = { approved:'aprobada', rejected:'rechazada', pending:'puesta en pendiente de nuevo' };
   showToast(`Cuenta de ${t.name || t.email} ${labels[newStatus] || 'actualizada'}.`);
+  renderStats();
+  renderTeachers();
+}
+
+function deleteTeacherAccount(email){
+  const teachers = DB.getTeachers();
+  const t = teachers.find(x => x.email === email);
+  if(!t) return;
+
+  const ok = confirm(`¿Eliminar la cuenta de docente de "${t.name || t.email}"? Esta acción no se puede deshacer. Sus cursos creados no se eliminan, pero quedarán sin docente asignado en el sistema.`);
+  if(!ok) return;
+
+  const updated = teachers.filter(x => x.email !== email);
+  DB.saveTeachers(updated);
+
+  showToast(`Cuenta de docente "${t.name || t.email}" eliminada.`);
   renderStats();
   renderTeachers();
 }
@@ -414,8 +440,31 @@ function renderStudents(){
         <div class="p-email">${escapeHtml(u.email)}</div>
       </div>
       ${confirmedPillHtml(u)}
+      <div class="person-actions">
+        <button class="btn-delete-account" data-delete-student="${escapeHtml(u.email)}">🗑️ Eliminar cuenta</button>
+      </div>
     </div>
   `).join('');
+
+  list.querySelectorAll('[data-delete-student]').forEach(btn => {
+    btn.addEventListener('click', () => deleteStudentAccount(btn.dataset.deleteStudent));
+  });
+}
+
+function deleteStudentAccount(email){
+  const users = DB.getUsers();
+  const u = users.find(x => x.email === email);
+  if(!u) return;
+
+  const ok = confirm(`¿Eliminar la cuenta de estudiante de "${u.name || u.email}"? Esta acción no se puede deshacer.`);
+  if(!ok) return;
+
+  const updated = users.filter(x => x.email !== email);
+  DB.saveUsers(updated);
+
+  showToast(`Cuenta de estudiante "${u.name || u.email}" eliminada.`);
+  renderStats();
+  renderStudents();
 }
 
 /* =========================================================
