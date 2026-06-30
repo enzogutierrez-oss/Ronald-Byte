@@ -215,9 +215,9 @@
 <section class="view" id="view-pending-approval">
   <div class="auth-wrap">
     <div class="auth-card" style="text-align:center;">
-      <div style="font-size:3rem; margin-bottom:14px;">⏳</div>
-      <h2>Tu cuenta está pendiente de aprobación</h2>
-      <p class="sub">Un administrador de la Academia Ronald Byte debe autorizar tu cuenta de docente antes de que puedas acceder a la intranet. Te avisaremos por correo apenas sea aprobada.</p>
+      <div style="font-size:3rem; margin-bottom:14px;" id="pendingIcon">⏳</div>
+      <h2 id="pendingTitle">Tu cuenta está pendiente de aprobación</h2>
+      <p class="sub" id="pendingText">Un administrador de la Academia Ronald Byte debe autorizar tu cuenta de docente antes de que puedas acceder a la intranet. Te avisaremos por correo apenas sea aprobada.</p>
       <button type="button" class="btn-secondary" id="btnLogoutFromPending" style="margin-top:10px;">Cerrar sesión</button>
     </div>
   </div>
@@ -1077,6 +1077,19 @@ function currentTeacher(){
 
 function showPendingApprovalView(teacher){
   document.getElementById('navLogout').style.display = 'none';
+  const status = teacher && teacher.approvalStatus;
+  const icon = document.getElementById('pendingIcon');
+  const title = document.getElementById('pendingTitle');
+  const text = document.getElementById('pendingText');
+  if(status === 'rejected'){
+    icon.textContent = '⛔';
+    title.textContent = 'Tu solicitud fue rechazada';
+    text.textContent = 'Un administrador de la Academia Ronald Byte ha rechazado tu solicitud de cuenta de docente. Si crees que se trata de un error, contáctanos.';
+  } else {
+    icon.textContent = '⏳';
+    title.textContent = 'Tu cuenta está pendiente de aprobación';
+    text.textContent = 'Un administrador de la Academia Ronald Byte debe autorizar tu cuenta de docente antes de que puedas acceder a la intranet. Te avisaremos por correo apenas sea aprobada.';
+  }
   showView('view-pending-approval');
 }
 
@@ -1967,10 +1980,63 @@ document.getElementById('navLogout').addEventListener('click', () => {
 });
 
 /* =========================================================
-   INICIO: conectar a la nube, luego revisar sesión activa
+   VIGILANCIA EN TIEMPO REAL DE LA CUENTA DEL DOCENTE
+   Si el admin elimina, aprueba o rechaza la cuenta mientras el
+   docente tiene la sesión abierta, esto reacciona al instante
+   (sin esperar a que recargue la página), gracias a onSnapshot.
 ========================================================= */
+let __lastKnownApprovalStatus = null;
+
+function enforceSessionStatus(){
+  const session = DB.getSession();
+  if(!session) return; // no hay sesión activa, nada que vigilar
+
+  const teachers = DB.getTeachers();
+  const teacher = teachers.find(t => t.email === session.email);
+
+  // Caso 1: la cuenta ya no existe -> el admin la eliminó
+  if(!teacher){
+    DB.clearSession();
+    __lastKnownApprovalStatus = null;
+    document.getElementById('navLogout').style.display = 'none';
+    showToast('⚠️ Tu cuenta de docente fue eliminada por un administrador.');
+    showView('view-login');
+    return;
+  }
+
+  const status = teacher.approvalStatus || 'pending';
+  const wasOnDashboard = document.getElementById('view-dashboard').classList.contains('active');
+  const wasOnPending = document.getElementById('view-pending-approval').classList.contains('active');
+
+  // Caso 2: estaba aprobado y en el dashboard, pero lo rechazaron al instante
+  if(status === 'rejected' && wasOnDashboard){
+    showToast('⛔ Un administrador rechazó tu cuenta de docente.');
+    showPendingApprovalView(teacher);
+    __lastKnownApprovalStatus = status;
+    return;
+  }
+
+  // Caso 3: estaba pendiente/rechazado y lo acaban de aprobar -> entra al instante
+  if(status === 'approved' && wasOnPending){
+    showToast('✅ ¡Tu cuenta fue aprobada! Bienvenido.');
+    enterDashboard(teacher);
+    __lastKnownApprovalStatus = status;
+    return;
+  }
+
+  // Caso 4: estaba pendiente y lo rechazaron (o viceversa), actualiza el mensaje al instante
+  if(wasOnPending && status !== __lastKnownApprovalStatus){
+    showPendingApprovalView(teacher);
+  }
+
+  __lastKnownApprovalStatus = status;
+}
+
+
 async function startApp(){
   setOnCloudChange(() => {
+    enforceSessionStatus();
+
     const teacher = currentTeacher();
     if(!teacher) return;
     if(!document.getElementById('view-dashboard').classList.contains('active')) return;
@@ -2002,6 +2068,7 @@ async function startApp(){
   if(session){
     const teacher = currentTeacher();
     if(teacher){
+      __lastKnownApprovalStatus = teacher.approvalStatus || 'pending';
       if(teacher.approvalStatus !== 'approved'){
         showPendingApprovalView(teacher);
         return;
