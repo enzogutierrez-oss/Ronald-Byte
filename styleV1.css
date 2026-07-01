@@ -384,6 +384,9 @@
     transition:transform .3s ease, box-shadow .3s ease;
     position:relative;
     overflow:hidden;
+    display:block;
+    text-decoration:none;
+    color:var(--text);
   }
 
   .ciclo-card::before{
@@ -842,3 +845,13 @@
     section.content-section{padding:60px 18px;}
     .scroll-top{width:46px;height:46px;left:16px;bottom:16px;}
   }
+
+  /* =====================================================
+   styleOfimatica.css
+   Estilos específicos del ciclo:
+   Ofimática y Herramientas Digitales
+   ===================================================== */
+
+:root {
+  --ciclo-grad: linear-gradient(135deg, #f59e0b, #fbbf24);
+}
