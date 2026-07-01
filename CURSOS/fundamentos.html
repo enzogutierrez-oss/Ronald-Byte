@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fundamentos de Computación - Academia Ronald Byte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styleV1.css">
+<style>
+  /* ===== CICLO PAGE SPECIFIC STYLES ===== */
+  .ciclo-header{
+    position:sticky;top:0;z-index:1000;
+    background:linear-gradient(135deg,#1e90ff,#14e0c4);
+    background-size:300% 300%;
+    animation:gradientMove 10s ease infinite;
+    box-shadow:0 4px 20px rgba(0,0,0,0.2);
+  }
+  .ciclo-topbar{
+    max-width:1300px;margin:0 auto;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 24px;height:68px;
+  }
+  .ciclo-brand{display:flex;align-items:center;gap:10px;color:#fff;font-weight:800;font-size:1rem;text-decoration:none;}
+  .ciclo-brand span{opacity:.9;font-size:.85rem;font-weight:600;}
+  .ciclo-topbar-right{display:flex;align-items:center;gap:12px;}
+  .back-btn{
+    color:#fff;text-decoration:none;font-weight:700;font-size:.88rem;
+    padding:8px 16px;border-radius:20px;background:rgba(0,0,0,.2);
+    transition:background .2s;
+  }
+  .back-btn:hover{background:rgba(0,0,0,.35);}
+  .ciclo-theme-btn{
+    width:42px;height:42px;border-radius:50%;border:2px solid rgba(255,255,255,.4);
+    background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;
+    cursor:pointer;transition:transform .3s,background .3s;
+  }
+  .ciclo-theme-btn:hover{transform:scale(1.08) rotate(15deg);background:rgba(255,255,255,.3);}
+  .ciclo-theme-btn svg{width:20px;height:20px;}
+
+  /* Hero */
+  .ciclo-hero{
+    padding:80px 24px 70px;
+    background:linear-gradient(135deg,#1e90ff,#14e0c4);
+    text-align:center;color:#fff;
+    position:relative;overflow:hidden;
+  }
+  .ciclo-hero::after{
+    content:"";position:absolute;inset:0;
+    background:rgba(0,0,0,.25);
+  }
+  .ciclo-hero-inner{position:relative;z-index:1;max-width:800px;margin:0 auto;}
+  .ciclo-hero-icon{font-size:4rem;margin-bottom:18px;display:block;}
+  .ciclo-hero h1{font-size:clamp(1.8rem,5vw,3rem);font-weight:800;margin-bottom:14px;text-shadow:0 2px 12px rgba(0,0,0,.4);}
+  .ciclo-hero p{font-size:clamp(.95rem,2vw,1.15rem);opacity:.95;max-width:600px;margin:0 auto;}
+
+  /* Info sections */
+  .ciclo-content{max-width:1100px;margin:0 auto;padding:60px 24px;}
+  .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-bottom:60px;}
+  .info-card{
+    background:var(--card-bg);border:1px solid var(--border-soft);
+    border-radius:18px;padding:28px 24px;box-shadow:var(--card-shadow);
+    border-top:4px solid transparent;
+    border-image:linear-gradient(135deg,#1e90ff,#14e0c4) 1;
+    transition:transform .3s;
+  }
+  .info-card:hover{transform:translateY(-6px);}
+  .info-card h3{color:var(--orange-deep);font-size:1.05rem;margin-bottom:12px;}
+  [data-theme="dark"] .info-card h3{color:#fbbf24;}
+  .info-card p{color:var(--text-soft);font-size:.9rem;line-height:1.7;}
+  .info-card code{
+    display:inline-block;background:var(--bg);color:var(--blue-2);
+    padding:8px 12px;border-radius:8px;font-size:.82rem;
+    margin-top:8px;white-space:pre-wrap;line-height:1.6;
+  }
+  [data-theme="dark"] .info-card code{color:#7dd3fc;background:#0d1529;}
+
+  /* Video */
+  .ciclo-video-section{background:var(--bg-soft);padding:60px 24px;}
+  .ciclo-video-inner{max-width:860px;margin:0 auto;text-align:center;}
+  .ciclo-video-inner h2{font-size:1.6rem;font-weight:800;color:var(--purple-accent);margin-bottom:8px;}
+  [data-theme="dark"] .ciclo-video-inner h2{color:#c4a4ff;}
+  .ciclo-video-inner p.video-sub{color:var(--text-soft);font-size:.9rem;margin-bottom:24px;}
+  .video-wrap{
+    position:relative;width:100%;padding-bottom:56.25%;
+    border-radius:18px;overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,.25);
+  }
+  .video-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+  .video-note{
+    margin-top:14px;font-size:.78rem;color:var(--text-soft);
+    background:var(--card-bg);border:1px solid var(--border-soft);
+    border-radius:10px;padding:10px 16px;display:inline-block;
+  }
+
+  /* Quiz */
+  .ciclo-quiz-section{max-width:800px;margin:0 auto;padding:60px 24px 80px;}
+  .ciclo-quiz-section h2{font-size:1.6rem;font-weight:800;color:var(--purple-accent);margin-bottom:6px;}
+  [data-theme="dark"] .ciclo-quiz-section h2{color:#c4a4ff;}
+  .quiz-subtitle{color:var(--text-soft);font-size:.9rem;margin-bottom:32px;}
+
+  .quiz-box{background:var(--card-bg);border:1px solid var(--border-soft);border-radius:22px;padding:36px 32px;box-shadow:var(--card-shadow);}
+
+  .quiz-progress-bar{
+    height:6px;background:var(--border-soft);border-radius:4px;margin-bottom:24px;overflow:hidden;
+  }
+  .quiz-progress-fill{
+    height:100%;background:linear-gradient(135deg,#1e90ff,#14e0c4);border-radius:4px;
+    transition:width .4s ease;
+  }
+  .quiz-counter{font-size:.8rem;color:var(--text-soft);margin-bottom:14px;font-weight:600;}
+  .quiz-question{font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:22px;line-height:1.5;}
+
+  .quiz-options{display:flex;flex-direction:column;gap:12px;margin-bottom:22px;}
+  .quiz-opt{
+    background:var(--bg);border:2px solid var(--border-soft);
+    border-radius:14px;padding:14px 18px;
+    cursor:pointer;font-size:.92rem;font-weight:500;color:var(--text);
+    text-align:left;transition:border-color .2s,background .2s,transform .15s;
+  }
+  .quiz-opt:hover:not(.disabled){border-color:var(--blue-2);background:rgba(37,99,235,.06);transform:translateX(4px);}
+  .quiz-opt.selected{border-color:var(--blue-2);background:rgba(37,99,235,.1);}
+  .quiz-opt.correct{border-color:var(--green-accent)!important;background:rgba(34,197,94,.12)!important;color:var(--green-accent);font-weight:700;}
+  .quiz-opt.wrong{border-color:#ef4444!important;background:rgba(239,68,68,.1)!important;color:#ef4444;}
+  .quiz-opt.disabled{pointer-events:none;}
+
+  .quiz-feedback{
+    display:none;padding:14px 16px;border-radius:12px;
+    font-size:.86rem;line-height:1.6;margin-bottom:18px;
+  }
+  .quiz-feedback.show{display:block;}
+  .quiz-feedback.ok{background:rgba(34,197,94,.12);color:#15803d;border-left:4px solid var(--green-accent);}
+  [data-theme="dark"] .quiz-feedback.ok{color:#4ade80;}
+  .quiz-feedback.fail{background:rgba(239,68,68,.1);color:#b91c1c;border-left:4px solid #ef4444;}
+  [data-theme="dark"] .quiz-feedback.fail{color:#fca5a5;}
+
+  .quiz-btn-row{display:flex;gap:12px;flex-wrap:wrap;}
+  .quiz-btn{
+    padding:12px 26px;border-radius:30px;border:none;
+    font-weight:700;font-size:.9rem;cursor:pointer;
+    transition:transform .2s,filter .2s;font-family:inherit;
+  }
+  .quiz-btn:hover{transform:translateY(-2px);filter:brightness(1.08);}
+  .btn-check{background:linear-gradient(135deg,#1e90ff,#14e0c4);color:#fff;}
+  .btn-next{background:var(--orange-accent);color:#1c2433;display:none;}
+  .btn-retry{background:linear-gradient(135deg,#1e90ff,#14e0c4);color:#fff;}
+
+  .quiz-result{display:none;text-align:center;padding:10px 0;}
+  .quiz-result.show{display:block;}
+  .result-emoji{font-size:3.5rem;margin-bottom:14px;display:block;}
+  .result-score{font-size:1.6rem;font-weight:800;color:var(--text);margin-bottom:8px;}
+  .result-msg{color:var(--text-soft);font-size:.95rem;margin-bottom:24px;}
+
+  /* Footer ciclo */
+  .ciclo-footer{text-align:center;padding:26px;color:var(--text-soft);font-size:.82rem;border-top:1px solid var(--border-soft);}
+
+  @media(max-width:600px){
+    .ciclo-topbar{padding:0 14px;}
+    .ciclo-hero{padding:56px 18px 50px;}
+    .ciclo-content{padding:40px 16px;}
+    .quiz-box{padding:24px 18px;}
+    .ciclo-video-section,.ciclo-quiz-section{padding-left:16px;padding-right:16px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="ciclo-header">
+  <div class="ciclo-topbar">
+    <a href="../index.html" class="ciclo-brand">
+      <span style="font-size:1.4rem;">🎓</span>
+      <span>Academia Ronald Byte</span>
+    </a>
+    <div class="ciclo-topbar-right">
+      <a href="../index.html" class="back-btn">← Volver a Ciclos</a>
+      <button class="ciclo-theme-btn" id="themeToggle" aria-label="Cambiar tema">
+        <svg id="sunIcon" viewBox="0 0 24 24" fill="none" stroke="#fff7d6" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="4"></line><line x1="12" y1="20" x2="12" y2="23"></line>
+          <line x1="4.2" y1="4.2" x2="6.3" y2="6.3"></line><line x1="17.7" y1="17.7" x2="19.8" y2="19.8"></line>
+          <line x1="1" y1="12" x2="4" y2="12"></line><line x1="20" y1="12" x2="23" y2="12"></line>
+          <line x1="4.2" y1="19.8" x2="6.3" y2="17.7"></line><line x1="17.7" y1="6.3" x2="19.8" y2="4.2"></line>
+        </svg>
+        <svg id="moonIcon" viewBox="0 0 24 24" fill="#dbe6ff" style="display:none;">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="ciclo-hero">
+  <div class="ciclo-hero-inner">
+    <span class="ciclo-hero-icon">💻</span>
+    <h1>Fundamentos de Computación</h1>
+    <p>Comprende cómo funciona el mundo digital desde cero</p>
+  </div>
+</section>
+
+<!-- INFORMACIÓN -->
+<section>
+  <div class="ciclo-content">
+    <div class="info-grid">
+      <div class="info-card"><h3>🖥️ ¿Qué es una computadora?</h3><p>Una computadora es una máquina electrónica capaz de recibir, procesar y almacenar datos para producir resultados útiles. Consta de componentes físicos (hardware) y programas (software) que trabajan juntos.</p></div>
+      <div class="info-card"><h3>⚙️ Componentes principales (Hardware)</h3><p><strong>CPU (Procesador):</strong> el "cerebro" que ejecuta instrucciones.<br><strong>RAM:</strong> memoria temporal de trabajo; almacena datos mientras la computadora está encendida.<br><strong>Disco duro / SSD:</strong> almacenamiento permanente de archivos y programas.<br><strong>Tarjeta madre (Motherboard):</strong> placa principal que conecta todos los componentes.<br><strong>Fuente de poder (PSU):</strong> suministra energía eléctrica a los componentes.</p></div>
+      <div class="info-card"><h3>🖱️ Dispositivos de entrada y salida</h3><p><strong>Entrada:</strong> teclado, ratón, micrófono, escáner, cámara web.<br><strong>Salida:</strong> monitor, impresora, bocinas, proyector.<br>Algunos dispositivos son de entrada/salida: pantallas táctiles y memorias USB.</p></div>
+      <div class="info-card"><h3>📦 Software: sistemas operativos y programas</h3><p>El <strong>sistema operativo (SO)</strong> gestiona el hardware y permite ejecutar aplicaciones. Ejemplos: Windows, macOS, Linux, Android.<br>Los <strong>programas de aplicación</strong> realizan tareas específicas: Word, Chrome, Photoshop, etc.</p></div>
+
+    </div>
+  </div>
+</section>
+
+<!-- VIDEO -->
+<section class="ciclo-video-section">
+  <div class="ciclo-video-inner">
+    <h2>🎬 Video del Curso</h2>
+    <p class="video-sub">Video: Fundamentos de Computación</p>
+    <div class="video-wrap">
+      <!-- Reemplaza REEMPLAZA_CON_ID_YOUTUBE por el ID real del video de YouTube -->
+      <!-- Ejemplo: si el link es https://www.youtube.com/watch?v=dQw4w9WgXcQ, el ID es dQw4w9WgXcQ -->
+      <iframe
+        src="https://www.youtube.com/watch?v=K_TAGe6j-w4"
+        title="Video: Fundamentos de Computación"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
+    <p class="video-note">💡 Si el video no carga,<strong>recarga la página.</strong></p>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section class="ciclo-quiz-section">
+  <h2>📝 Pon a prueba lo que aprendiste</h2>
+  <p class="quiz-subtitle">Responde las siguientes preguntas sobre Fundamentos de Computación.</p>
+
+  <div class="quiz-box" id="quizBox">
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="quiz-counter" id="quizCounter">Pregunta 1 de 5</div>
+    <div class="quiz-question" id="quizQuestion"></div>
+    <div class="quiz-options" id="quizOptions"></div>
+    <div class="quiz-feedback" id="quizFeedback"></div>
+    <div class="quiz-btn-row">
+      <button class="quiz-btn btn-check" id="btnCheck" onclick="checkAnswer()">Verificar respuesta</button>
+      <button class="quiz-btn btn-next" id="btnNext" onclick="nextQuestion()">Siguiente →</button>
+    </div>
+    <div class="quiz-result" id="quizResult">
+      <span class="result-emoji" id="resultEmoji"></span>
+      <div class="result-score" id="resultScore"></div>
+      <div class="result-msg" id="resultMsg"></div>
+      <button class="quiz-btn btn-retry" onclick="startQuiz()">🔄 Intentar de nuevo</button>
+    </div>
+  </div>
+</section>
+
+<footer class="ciclo-footer">
+  © 2026 Academia Ronald Byte. Todos los derechos reservados.
+</footer>
+
+<script>
+// ===== TEMA CLARO / OSCURO =====
+const themeToggle = document.getElementById('themeToggle');
+const sunIcon     = document.getElementById('sunIcon');
+const moonIcon    = document.getElementById('moonIcon');
+const root        = document.documentElement;
+
+function setTheme(t){
+  if(t==='dark'){ root.setAttribute('data-theme','dark'); sunIcon.style.display='none'; moonIcon.style.display='block'; }
+  else { root.removeAttribute('data-theme'); sunIcon.style.display='block'; moonIcon.style.display='none'; }
+}
+setTheme('light');
+themeToggle.addEventListener('click',()=>{
+  setTheme(root.getAttribute('data-theme')==='dark' ? 'light' : 'dark');
+});
+
+// ===== QUIZ =====
+const QUESTIONS = [{"q": "¿Cuál es la función principal de la CPU?", "opts": ["Almacenar datos de forma permanente", "Procesar instrucciones y datos", "Mostrar imágenes en la pantalla", "Conectar la PC a internet"], "correct": 1, "exp": "La CPU (Unidad Central de Procesamiento) es el componente que ejecuta las instrucciones de los programas; por eso se llama el \"cerebro\" de la computadora."}, {"q": "¿Qué significa la sigla RAM?", "opts": ["Registro de Acceso Múltiple", "Rapid Application Module", "Random Access Memory", "Red de Almacenamiento Móvil"], "correct": 2, "exp": "RAM significa \"Random Access Memory\" (Memoria de Acceso Aleatorio). Es la memoria temporal que usa la computadora mientras trabaja; se borra al apagar el equipo."}, {"q": "¿Cuál de estos es un dispositivo de almacenamiento permanente?", "opts": ["RAM", "CPU", "Disco duro (HDD/SSD)", "Monitor"], "correct": 2, "exp": "El disco duro (HDD) o la unidad de estado sólido (SSD) guardan datos de forma permanente, incluso cuando la computadora está apagada."}, {"q": "¿Cuál de los siguientes es un sistema operativo?", "opts": ["Microsoft Word", "Google Chrome", "Python", "Windows 11"], "correct": 3, "exp": "Windows 11 es un sistema operativo. Word es un procesador de texto, Chrome es un navegador y Python es un lenguaje de programación."}, {"q": "La tarjeta madre (motherboard) tiene como función principal:", "opts": ["Procesar cálculos matemáticos", "Conectar e interconectar todos los componentes del equipo", "Almacenar el sistema operativo", "Convertir la corriente eléctrica"], "correct": 1, "exp": "La tarjeta madre es la placa principal que permite la comunicación entre todos los componentes: CPU, RAM, discos, tarjetas de expansión, etc."}];
+
+let current = 0, score = 0, selected = null;
+
+function startQuiz(){
+  current = 0; score = 0; selected = null;
+  document.getElementById('quizResult').classList.remove('show');
+  document.getElementById('quizBox').querySelectorAll('.quiz-counter,.quiz-question,.quiz-options,.quiz-feedback,.quiz-btn-row')
+    .forEach(el => el.style.display = '');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const q = QUESTIONS[current];
+  document.getElementById('quizCounter').textContent = 'Pregunta ' + (current+1) + ' de ' + QUESTIONS.length;
+  document.getElementById('progressFill').style.width = (current/QUESTIONS.length*100) + '%';
+  document.getElementById('quizQuestion').textContent = q.q;
+  document.getElementById('quizFeedback').className = 'quiz-feedback';
+  document.getElementById('quizFeedback').textContent = '';
+  document.getElementById('btnCheck').style.display = 'inline-block';
+  document.getElementById('btnNext').style.display  = 'none';
+  selected = null;
+
+  const optDiv = document.getElementById('quizOptions');
+  optDiv.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opt';
+    btn.textContent = opt;
+    btn.onclick = () => selectOpt(i);
+    optDiv.appendChild(btn);
+  });
+}
+
+function selectOpt(i){
+  selected = i;
+  document.querySelectorAll('.quiz-opt').forEach((b,j) => {
+    b.classList.toggle('selected', j===i);
+  });
+}
+
+function checkAnswer(){
+  if(selected === null){ alert('Selecciona una opción primero.'); return; }
+  const q = QUESTIONS[current];
+  const opts = document.querySelectorAll('.quiz-opt');
+  opts.forEach((b,i) => {
+    b.classList.add('disabled');
+    if(i === q.correct) b.classList.add('correct');
+    else if(i === selected && selected !== q.correct) b.classList.add('wrong');
+  });
+  const fb = document.getElementById('quizFeedback');
+  if(selected === q.correct){
+    score++;
+    fb.className = 'quiz-feedback show ok';
+    fb.innerHTML = '✅ <strong>¡Correcto!</strong> ' + q.exp;
+  } else {
+    fb.className = 'quiz-feedback show fail';
+    fb.innerHTML = '❌ <strong>Incorrecto.</strong> ' + q.exp;
+  }
+  document.getElementById('btnCheck').style.display = 'none';
+  document.getElementById('btnNext').style.display  = 'inline-block';
+  if(current === QUESTIONS.length-1) document.getElementById('btnNext').textContent = 'Ver resultado 🏁';
+}
+
+function nextQuestion(){
+  current++;
+  if(current < QUESTIONS.length){ renderQuestion(); }
+  else { showResult(); }
+}
+
+function showResult(){
+  document.getElementById('progressFill').style.width = '100%';
+  document.querySelectorAll('.quiz-counter,.quiz-question,.quiz-options,.quiz-feedback,.quiz-btn-row')
+    .forEach(el => el.style.display = 'none');
+  const r = document.getElementById('quizResult');
+  r.classList.add('show');
+  const pct = score/QUESTIONS.length;
+  let emoji, msg;
+  if(pct===1)       { emoji='🏆'; msg='¡Perfecto! Dominaste todos los conceptos de este ciclo.'; }
+  else if(pct>=0.8) { emoji='🎉'; msg='¡Excelente! Muy buen dominio del tema.'; }
+  else if(pct>=0.6) { emoji='👍'; msg='¡Bien! Repasa los temas donde fallaste para afianzar tu aprendizaje.'; }
+  else              { emoji='📚'; msg='Revisa el material del ciclo y vuelve a intentarlo. ¡Tú puedes!'; }
+  document.getElementById('resultEmoji').textContent = emoji;
+  document.getElementById('resultScore').textContent = score + ' / ' + QUESTIONS.length + ' correctas';
+  document.getElementById('resultMsg').textContent   = msg;
+}
+
+startQuiz();
+</script>
+</body>
+</html>
