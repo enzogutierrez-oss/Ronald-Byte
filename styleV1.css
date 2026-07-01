@@ -591,11 +591,149 @@
     font-weight:700;
     font-size:0.92rem;
     color:#fff;
+    border:none;
+    cursor:pointer;
+    transition:transform .2s ease, filter .2s ease;
+    font-family:inherit;
   }
+  .pay-pill:hover{transform:translateY(-3px); filter:brightness(1.12);}
   .pay-pill img{width:18px;height:18px;object-fit:contain;}
   .pay-yape{background:#5b2a86;}
   .pay-plin{background:#00b389;}
-  .pay-visa{background:#1a3e8c;}
+  .pay-bcp{background:#1a3e8c;}
+
+  /* ===== MODALES DE PAGO ===== */
+  .pay-modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.65);
+    backdrop-filter:blur(4px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:3000;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .3s ease;
+    padding:20px;
+  }
+  .pay-modal-overlay.open{
+    opacity:1;
+    pointer-events:all;
+  }
+  .pay-modal{
+    background:var(--card-bg);
+    border-radius:24px;
+    padding:38px 34px;
+    max-width:420px;
+    width:100%;
+    position:relative;
+    box-shadow:0 24px 60px rgba(0,0,0,0.45);
+    transform:translateY(20px) scale(0.97);
+    transition:transform .3s ease;
+    text-align:center;
+  }
+  .pay-modal-overlay.open .pay-modal{
+    transform:translateY(0) scale(1);
+  }
+  .modal-close{
+    position:absolute; top:14px; right:16px;
+    background:none; border:none;
+    font-size:1.1rem; cursor:pointer;
+    color:var(--text-soft);
+    width:32px; height:32px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .2s ease;
+  }
+  .modal-close:hover{background:rgba(0,0,0,0.08);}
+
+  .modal-badge{
+    display:inline-block;
+    padding:6px 18px;
+    border-radius:20px;
+    font-weight:800;
+    font-size:0.9rem;
+    margin-bottom:14px;
+  }
+  .yape-badge{background:rgba(91,42,134,0.15); color:#5b2a86;}
+  [data-theme="dark"] .yape-badge{background:rgba(200,150,255,0.15); color:#d4a9ff;}
+  .plin-badge{background:rgba(0,179,137,0.15); color:#00b389;}
+  .bcp-badge{background:rgba(26,62,140,0.15); color:#1a3e8c;}
+  [data-theme="dark"] .bcp-badge{background:rgba(100,150,255,0.15); color:#7aaeff;}
+
+  .modal-title{
+    font-size:1.4rem; font-weight:800;
+    color:var(--text); margin-bottom:8px;
+  }
+  .modal-subtitle{
+    color:var(--text-soft); font-size:0.94rem;
+    margin-bottom:22px; line-height:1.5;
+  }
+  .modal-qr-wrap{
+    margin-bottom:22px;
+  }
+  .modal-qr{
+    width:190px; height:190px;
+    object-fit:contain;
+    border-radius:16px;
+    border:3px solid var(--border-soft);
+    padding:8px;
+    background:#fff;
+  }
+  .modal-qr-hint{
+    margin-top:8px; font-size:0.82rem;
+    color:var(--text-soft);
+  }
+  .modal-amount-row{
+    margin-bottom:16px; text-align:left;
+  }
+  .modal-amount-row label{
+    display:block; font-size:0.88rem;
+    font-weight:700; color:var(--text-soft);
+    margin-bottom:8px;
+  }
+  .modal-amount-row input{
+    width:100%; padding:12px 16px;
+    border-radius:14px;
+    border:1.5px solid var(--border-soft);
+    background:var(--bg);
+    color:var(--text);
+    font-size:1rem; font-family:inherit;
+    outline:none;
+    transition:border-color .2s ease;
+  }
+  .modal-amount-row input:focus{border-color:var(--blue-2);}
+
+  .modal-note{
+    font-size:0.84rem; color:var(--text-soft);
+    line-height:1.5;
+  }
+
+  /* BCP info table */
+  .bcp-info{
+    background:var(--bg);
+    border-radius:16px;
+    padding:18px 20px;
+    margin-bottom:22px;
+    text-align:left;
+    display:flex; flex-direction:column; gap:14px;
+  }
+  .bcp-row{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
+  .bcp-label{font-size:0.82rem; font-weight:700; color:var(--text-soft);}
+  .bcp-value{font-weight:700; color:var(--text); font-size:0.9rem;}
+  .bcp-account{
+    font-family:'Courier New', monospace;
+    background:var(--card-bg);
+    padding:4px 10px; border-radius:8px;
+    font-size:0.88rem;
+    letter-spacing:0.5px;
+  }
+
+  @media(max-width:480px){
+    .pay-modal{padding:28px 20px;}
+    .modal-qr{width:160px; height:160px;}
+  }
 
   .footer-bottom{
     text-align:center;
