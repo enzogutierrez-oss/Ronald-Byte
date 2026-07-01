@@ -165,14 +165,14 @@
       <p class="footer-desc">Buscando la excelencia académica y más. Formamos personas con bases sólidas en computación, ofimática, programación y redes.</p>
       <div class="social-row">
         <!-- Reemplaza el href="#" por el link real de cada red, y el src de cada img por tu propio ícono -->
-        <a href="https://www.facebook.com/share/1bG8TXjHXr/" target="_blank" rel="noopener" class="social-pill">
-          <img src="Imagenes/face.png" alt=""><span>Facebook</span>
+        <a href="https://www.facebook.com/share/19PCzogcts/" target="_blank" rel="noopener" class="social-pill">
+          <img src="Imagenes/facebook.png" alt=""><span>Facebook</span>
         </a>
         <a href="https://www.instagram.com/ronald2_03?igsh=MTZha2ZrNWttd3Vjcw==" target="_blank" rel="noopener" class="social-pill">
           <img src="Imagenes/instagram.png" alt=""><span>Instagram</span>
         </a>
         <a href="https://wa.me/qr/Z2FW3DAIZHTSE1" target="_blank" rel="noopener" class="social-pill">
-          <img src="Imagenes/wasaa.webp" alt=""><span>WhatsApp</span>
+          <img src="Imagenes/whatsapp.png" alt=""><span>WhatsApp</span>
         </a>
       </div>
     </div>
@@ -203,10 +203,15 @@
     <div class="footer-col">
       <h3>Métodos de pago</h3>
       <div class="payment-row">
-        <!-- Reemplaza el src de cada img por el logo del método de pago que aceptes -->
-        <span class="pay-pill pay-yape"><img src="Imagenes/yape.png" alt="">Yape</span>
-        <span class="pay-pill pay-plin"><img src="Imagenes/plin.webp" alt="">Plin</span>
-        <span class="pay-pill pay-visa"><img src="Imagenes/bcp.jpg" alt="">Visa</span>
+        <button class="pay-pill pay-yape" onclick="openModal('modal-yape')">
+          <img src="Imagenes/yape.png" alt="">Yape
+        </button>
+        <button class="pay-pill pay-plin" onclick="openModal('modal-plin')">
+          <img src="Imagenes/plin.webp" alt="">Plin
+        </button>
+        <button class="pay-pill pay-bcp" onclick="openModal('modal-bcp')">
+          <img src="Imagenes/bcp.jpg" alt="">BCP
+        </button>
       </div>
     </div>
 
@@ -216,6 +221,66 @@
     © 2026 Academia Ronald Byte. Todos los derechos reservados.
   </div>
 </footer>
+
+<!-- ===== MODAL YAPE ===== -->
+<div class="pay-modal-overlay" id="modal-yape" onclick="closeModalOutside(event, 'modal-yape')">
+  <div class="pay-modal">
+    <button class="modal-close" onclick="closeModal('modal-yape')">✕</button>
+    <div class="modal-badge yape-badge">💜 Yape</div>
+    <h3 class="modal-title">¡Paga con Yape!</h3>
+    <p class="modal-subtitle">La academia tiene un monto pero si quieres donar, normal 😀</p>
+    <div class="modal-qr-wrap">
+      <!-- Reemplaza este src con la ruta a tu imagen de QR de Yape -->
+      <img src="Imagenes/yapeqr.jpeg" alt="QR Yape" class="modal-qr">
+      <p class="modal-qr-hint">Escanea el QR con tu app Yape</p>
+    </div>
+    <p class="modal-note">¡Gracias por apoyar a la Academia Ronald Byte! 🙌</p>
+  </div>
+</div>
+
+<!-- ===== MODAL PLIN ===== -->
+<div class="pay-modal-overlay" id="modal-plin" onclick="closeModalOutside(event, 'modal-plin')">
+  <div class="pay-modal">
+    <button class="modal-close" onclick="closeModal('modal-plin')">✕</button>
+    <div class="modal-badge plin-badge">💚 Plin</div>
+    <h3 class="modal-title">¡Paga con Plin!</h3>
+    <p class="modal-subtitle">La academia tiene un monto pero si quieres donar, normal 😀</p>
+    <div class="modal-qr-wrap">
+      <!-- Reemplaza este src con la ruta a tu imagen de QR de Plin -->
+      <img src="Imagenes/qr-plin.png" alt="QR Plin" class="modal-qr">
+      <p class="modal-qr-hint">Escanea el QR con tu app Plin</p>
+    </div>
+    <p class="modal-note">¡Gracias por apoyar a la Academia Ronald Byte! 🙌</p>
+  </div>
+</div>
+
+<!-- ===== MODAL BCP ===== -->
+<div class="pay-modal-overlay" id="modal-bcp" onclick="closeModalOutside(event, 'modal-bcp')">
+  <div class="pay-modal">
+    <button class="modal-close" onclick="closeModal('modal-bcp')">✕</button>
+    <div class="modal-badge bcp-badge">🏦 BCP</div>
+    <h3 class="modal-title">Depósito en BCP</h3>
+    <p class="modal-subtitle">Estas son ligas mayores 😎💪</p>
+    <div class="bcp-info">
+      <div class="bcp-row">
+        <span class="bcp-label">Titular</span>
+        <!-- Reemplaza con el nombre real del titular -->
+        <span class="bcp-value">Academia Ronald Byte</span>
+      </div>
+      <div class="bcp-row">
+        <span class="bcp-label">N° de cuenta</span>
+        <!-- Reemplaza con tu número de cuenta real -->
+        <span class="bcp-value bcp-account">XXX-XXXXXXXXXX-X-XX</span>
+      </div>
+      <div class="bcp-row">
+        <span class="bcp-label">CCI</span>
+        <!-- Reemplaza con tu CCI real -->
+        <span class="bcp-value bcp-account">002XXXXXXXXXXXXXXXX</span>
+      </div>
+    </div>
+    <p class="modal-note">Envía tu voucher al WhatsApp o correo para confirmar tu pago ✅</p>
+  </div>
+</div>
 
 <button class="scroll-top" id="scrollTopBtn" aria-label="Subir al inicio">↑</button>
 
@@ -288,6 +353,24 @@
 
   scrollTopBtn.addEventListener('click', () => {
     window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  // ===== MODALES DE PAGO =====
+  function openModal(id){
+    document.getElementById(id).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(id){
+    document.getElementById(id).classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function closeModalOutside(e, id){
+    if(e.target === document.getElementById(id)) closeModal(id);
+  }
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape'){
+      ['modal-yape','modal-plin','modal-bcp'].forEach(closeModal);
+    }
   });
 </script>
 
