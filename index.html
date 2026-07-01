@@ -25,11 +25,11 @@
       <div class="dropdown" id="ciclosDropdown">
         <button class="drop-toggle" id="ciclosToggle">Nuestros Ciclos ▾</button>
         <div class="dropdown-panel">
-          <a href="#ciclos">Fundamentos de Computación</a>
-          <a href="#ciclos">Ofimática y Herramientas Digitales</a>
-          <a href="#ciclos">Algoritmos y Programación</a>
-          <a href="#ciclos">Redes de Computadoras</a>
-          <a href="#ciclos">Ensamblaje y Mantenimiento de Computadoras</a>
+          <a href="CURSOS/fundamentos.html">Fundamentos de Computación</a>
+          <a href="CURSOS/ofimatica.html">Ofimática y Herramientas Digitales</a>
+          <a href="CURSOS/algoritmos.html">Algoritmos y Programación</a>
+          <a href="CURSOS/redes.html">Redes de Computadoras</a>
+          <a href="CURSOS/ensamblaje.html">Ensamblaje y Mantenimiento de Computadoras</a>
         </div>
       </div>
       <a href="#contacto">Contáctanos</a>
@@ -91,31 +91,31 @@
 <section class="content-section" id="ciclos">
   <h2 class="section-title">Nuestros Cursos</h2>
   <div class="ciclos-grid">
-    <div class="ciclo-card">
+    <a href="CURSOS/fundamentos.html" class="ciclo-card">
       <span class="icon">💻</span>
       <h3>Fundamentos de Computación</h3>
       <p>Las bases esenciales para comprender cómo funciona una computadora y su entorno digital.</p>
-    </div>
-    <div class="ciclo-card">
+    </a>
+    <a href="CURSOS/ofimatica.html" class="ciclo-card">
       <span class="icon">📊</span>
       <h3>Ofimática y Herramientas Digitales</h3>
       <p>Manejo práctico de herramientas de oficina para el estudio y el trabajo diario.</p>
-    </div>
-    <div class="ciclo-card">
+    </a>
+    <a href="CURSOS/algoritmos.html" class="ciclo-card">
       <span class="icon">🧠</span>
       <h3>Algoritmos y Programación</h3>
       <p>Pensamiento lógico y primeros pasos en el desarrollo de software.</p>
-    </div>
-    <div class="ciclo-card">
+    </a>
+    <a href="CURSOS/redes.html" class="ciclo-card">
       <span class="icon">🌐</span>
       <h3>Redes de Computadoras</h3>
       <p>Cómo se conectan e intercambian información los equipos en una red.</p>
-    </div>
-    <div class="ciclo-card">
+    </a>
+    <a href="CURSOS/ensamblaje.html" class="ciclo-card">
       <span class="icon">🔧</span>
       <h3>Ensamblaje y Mantenimiento de Computadoras</h3>
       <p>Armado, diagnóstico y mantenimiento práctico de equipos de cómputo.</p>
-    </div>
+    </a>
   </div>
 </section>
 
@@ -206,9 +206,6 @@
         <button class="pay-pill pay-yape" onclick="openModal('modal-yape')">
           <img src="Imagenes/yape.png" alt="">Yape
         </button>
-        <button class="pay-pill pay-plin" onclick="openModal('modal-plin')">
-          <img src="Imagenes/plin.webp" alt="">Plin
-        </button>
         <button class="pay-pill pay-bcp" onclick="openModal('modal-bcp')">
           <img src="Imagenes/bcp.jpg" alt="">BCP
         </button>
@@ -238,22 +235,6 @@
   </div>
 </div>
 
-<!-- ===== MODAL PLIN ===== -->
-<div class="pay-modal-overlay" id="modal-plin" onclick="closeModalOutside(event, 'modal-plin')">
-  <div class="pay-modal">
-    <button class="modal-close" onclick="closeModal('modal-plin')">✕</button>
-    <div class="modal-badge plin-badge">💚 Plin</div>
-    <h3 class="modal-title">¡Paga con Plin!</h3>
-    <p class="modal-subtitle">La academia tiene un monto pero si quieres donar, normal 😀</p>
-    <div class="modal-qr-wrap">
-      <!-- Reemplaza este src con la ruta a tu imagen de QR de Plin -->
-      <img src="Imagenes/qr-plin.png" alt="QR Plin" class="modal-qr">
-      <p class="modal-qr-hint">Escanea el QR con tu app Plin</p>
-    </div>
-    <p class="modal-note">¡Gracias por apoyar a la Academia Ronald Byte! 🙌</p>
-  </div>
-</div>
-
 <!-- ===== MODAL BCP ===== -->
 <div class="pay-modal-overlay" id="modal-bcp" onclick="closeModalOutside(event, 'modal-bcp')">
   <div class="pay-modal">
@@ -270,12 +251,12 @@
       <div class="bcp-row">
         <span class="bcp-label">N° de cuenta</span>
         <!-- Reemplaza con tu número de cuenta real -->
-        <span class="bcp-value bcp-account">XXX-XXXXXXXXXX-X-XX</span>
+        <span class="bcp-value bcp-account">235-1254693268-5-78</span>
       </div>
       <div class="bcp-row">
         <span class="bcp-label">CCI</span>
         <!-- Reemplaza con tu CCI real -->
-        <span class="bcp-value bcp-account">002XXXXXXXXXXXXXXXX</span>
+        <span class="bcp-value bcp-account">00261254685444786</span>
       </div>
     </div>
     <p class="modal-note">Envía tu voucher al WhatsApp o correo para confirmar tu pago ✅</p>
@@ -369,7 +350,7 @@
   }
   document.addEventListener('keydown', (e) => {
     if(e.key === 'Escape'){
-      ['modal-yape','modal-plin','modal-bcp'].forEach(closeModal);
+      ['modal-yape','modal-bcp'].forEach(closeModal);
     }
   });
 </script>
