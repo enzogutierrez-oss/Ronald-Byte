@@ -485,28 +485,33 @@ async function startApp(){
     await initCloudSync();
   } catch(err){
     console.error('Error conectando a la base de datos en la nube:', err);
-    showToast('⚠️ No se pudo conectar con la base de datos. Revisa tu conexión a internet.');
+    showToast('⚠️ No se pudo conectar con la base de datos. Revisa tu conexión.');
   }
 
   document.getElementById('cloudLoadingOverlay').style.display = 'none';
 
-  // La sesión de admin se revalida con Firebase Auth, no solo con el flag local,
-  // para evitar que alguien reactive el acceso editando el localStorage a mano.
-  const { auth } = window.__firebase;
-auth.onAuthStateChanged((firebaseUser) => {
-    const userEmail = (firebaseUser && firebaseUser.email) ? firebaseUser.email.toLowerCase().trim() : '';
-    
-    if(firebaseUser && ADMIN_AUTHORIZED_EMAILS.some(authEmail => authEmail.toLowerCase() === userEmail)){
+  // Revalidación de sesión con Firebase Auth
+  if(window.__firebase && window.__firebase.auth){
+    const { auth } = window.__firebase;
+    auth.onAuthStateChanged((firebaseUser) => {
+      const userEmail = (firebaseUser && firebaseUser.email) ? firebaseUser.email.toLowerCase().trim() : '';
+      
+      if(firebaseUser && ADMIN_AUTHORIZED_EMAILS.some(authEmail => authEmail.toLowerCase() === userEmail)){
         localStorage.setItem(ADMIN_SESSION_KEY, '1');
         enterDashboard();
-    } else {
+      } else {
         localStorage.removeItem(ADMIN_SESSION_KEY);
         document.getElementById('navLogout').style.display = 'none';
         if(!document.getElementById('view-dashboard').classList.contains('active')){
-            showView('view-login');
+          showView('view-login');
         }
-    }
-});
+      }
+    });
+  } else {
+    console.error("Firebase Auth no está disponible");
+    showView('view-login');
+  }
+}
 
 startApp();
 </script>
