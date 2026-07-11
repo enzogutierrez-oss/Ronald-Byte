@@ -123,7 +123,10 @@
 /* =========================================================
    ACCESO EXCLUSIVO: solo este correo puede entrar al panel
 ========================================================= */
-const ADMIN_AUTHORIZED_EMAIL = 'enzoronaldgutierrez@gmail.com';
+const ADMIN_AUTHORIZED_EMAILS = [
+    'enzoronaldgutierrez@gmail.com',
+    'lpgunfv9@gmail.com'
+];
 
 /* =========================================================
    "BASE DE DATOS" EN LA NUBE (Firebase Firestore)
@@ -268,11 +271,12 @@ document.getElementById('googleBtnLogin').addEventListener('click', async () => 
     const result = await signInWithPopup(auth, googleProvider);
     const email = (result.user.email || '').trim().toLowerCase();
 
-    if(email !== ADMIN_AUTHORIZED_EMAIL.toLowerCase()){
-      showMsg('loginMsg', 'Esta cuenta de Gmail no tiene autorización para entrar al panel de administración.', 'error');
-      await window.__firebase.signOut(auth);
-      return;
-    }
+// Verifica si el email está en la lista autorizada
+if(!ADMIN_AUTHORIZED_EMAILS.some(authEmail => authEmail.toLowerCase() === email)){
+    showMsg('loginMsg', 'Esta cuenta de Gmail no tiene autorización para entrar al panel de administración.', 'error');
+    await window.__firebase.signOut(auth);
+    return;
+}
 
     localStorage.setItem(ADMIN_SESSION_KEY, '1');
     enterDashboard();
@@ -489,19 +493,20 @@ async function startApp(){
   // La sesión de admin se revalida con Firebase Auth, no solo con el flag local,
   // para evitar que alguien reactive el acceso editando el localStorage a mano.
   const { auth } = window.__firebase;
-  auth.onAuthStateChanged((firebaseUser) => {
-    if(firebaseUser && (firebaseUser.email || '').toLowerCase() === ADMIN_AUTHORIZED_EMAIL.toLowerCase()){
-      localStorage.setItem(ADMIN_SESSION_KEY, '1');
-      enterDashboard();
+auth.onAuthStateChanged((firebaseUser) => {
+    const userEmail = (firebaseUser && firebaseUser.email) ? firebaseUser.email.toLowerCase().trim() : '';
+    
+    if(firebaseUser && ADMIN_AUTHORIZED_EMAILS.some(authEmail => authEmail.toLowerCase() === userEmail)){
+        localStorage.setItem(ADMIN_SESSION_KEY, '1');
+        enterDashboard();
     } else {
-      localStorage.removeItem(ADMIN_SESSION_KEY);
-      document.getElementById('navLogout').style.display = 'none';
-      if(!document.getElementById('view-dashboard').classList.contains('active')){
-        showView('view-login');
-      }
+        localStorage.removeItem(ADMIN_SESSION_KEY);
+        document.getElementById('navLogout').style.display = 'none';
+        if(!document.getElementById('view-dashboard').classList.contains('active')){
+            showView('view-login');
+        }
     }
-  });
-}
+});
 
 startApp();
 </script>
